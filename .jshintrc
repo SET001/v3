@@ -1,0 +1,10 @@
+{
+  "browser": true,
+  "esnext": true,
+  "globals": {},
+  "predef":["THREE", "_", "console", "V3"],
+  "globalstrict": true,
+  "quotmark": true,
+  "undef": true,
+  "unused": true
+}
