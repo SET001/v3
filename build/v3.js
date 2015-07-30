@@ -95,107 +95,124 @@ V3.Controls = function(){
 };
 
 // Source: src/actor.js
-V3.Actor = function(){
-	this.canTick = true;
-};
-V3.Actor.prototype = {
-	beginPlay: function(){
+V3.Actor = class{
+	constructor(){
+		this.canTick = false;
+		this.components = [];
+	}
+	beginPlay(){
 
-	},
-	tick: function(deltaSeconds){
+	}
+	tick(deltaSeconds){
 		if(deltaSeconds){}
 	}
 };
 
 // Source: src/pawn.js
-V3.Pawn = function(){
-	V3.Actor.call(this);
+V3.Pawn = class extends V3.Actor{
 };
-V3.Pawn.prototype = Object.create(V3.Actor.prototype);
+
 
 // Source: src/gameMode.js
-V3.GameMode = function(){
-	console.log("GameMode constructor");
-	this.state = new V3.StateMachine();
-
-	this.pawn = new V3.Pawn();
-	this.pawn.beginPlay();
-	// only one controls class may be in use at any given time
-	this.controls = new V3.Controls();
+V3.GameMode = class{
+	constructor(){
+		this.state = new V3.StateMachine();
+		this.pawn = new V3.Pawn();
+		this.pawn.beginPlay();
+		// only one controls class may be in use at any given time
+		this.controls = new V3.Controls();
+	}
 	// game pausing
 	// levels transitions
 	// actors spawning
 	//
 };
-V3.GameMode.prototype = {
-
-};
 
 // Source: src/stateMachine.js
-V3.StateMachine = function(){
-	var states = ["inProgress", "enteringMap", "leavingMap", "aborted", "paused"];
-
-	var state = "asd";
-	this.prototype = {
-		get: function(){
-			return state;
-		},
-		set: function(state){
-			if (state in states){
-				this.state = state;
-				var event = new CustomEvent("gameStateChange", {state: state});
-				document.dispatchEvent("gameStateChange", event);
+{
+	let _states = ["inProgress", "enteringMap", "leavingMap", "aborted", "paused"];
+	let _state = "asd";
+	V3.StateMachine = class{
+		constructor(){}
+		get state(){
+			return _state;
+		}
+		set state(state){
+			console.log("setter called", state);
+			if ((state !== _state) && (_states.indexOf(state) != -1)){
+				_state = state;
+				// also should maybe trigger an event
 				return true;
 			}
 			else return false;
 		}
 	};
-};
+}
+
 
 // Source: src/view.js
-V3.View = function(){
-	this.scene = null;
-	this.renderer = new THREE.WebGLRenderer({antialias: this.config.renderer.antialias});
-	this.renderer.autoClear = false;
-	this.renderer.shadowMapEnabled = this.config.renderer.shadowMapEnabled;
-	this.renderer.shadowMapType = this.config.renderer.shadowMapType;
-	this.renderer.shadowMapHeight = this.config.renderer.shadowMapHeight;
-	this.renderer.shadowMapWidth = this.config.renderer.shadowMapWidth;
-	this.setCamera();
-	this.setSize();
-	this.container.appendChild(this.renderer.domElement);
-};
-V3.View.prototype = {
-	run: function(){
+V3.View = class{
+	constructor(game){
+		this.game = game;
+		this.renderer = new THREE.WebGLRenderer({antialias: V3.config.renderer.antialias});
+		this.renderer.autoClear = false;
+		this.renderer.shadowMapEnabled = V3.config.renderer.shadowMapEnabled;
+		this.renderer.shadowMapType = V3.config.renderer.shadowMapType;
+		this.renderer.shadowMapHeight = V3.config.renderer.shadowMapHeight;
+		this.renderer.shadowMapWidth = V3.config.renderer.shadowMapWidth;
 
-	},
-	render: function(){
+		this.container = V3.config.container ? V3.config.container : document.body;
+
+		this.scene = null;
+		this.setSize();
+		this.container.appendChild(this.renderer.domElement);
+	}
+	setSize(){
+		this.renderer.setSize(this.container.offsetWidth, this.container.offsetHeight);
+		if (this.camera){
+			this.camera.aspect = this.container.offsetWidth / this.container.offsetHeight;
+			this.camera.updateProjectionMatrix();
+		}
+	}
+	show(){
+		if (!this.scene){
+			this.scene = THREE.Scene();
+		}
+		this.animate();
+	}
+	render(){
 		this.renderer.render(this.scene, this.camera);
 		this.renderer.render(this.sceneHelpers, this.camera);
-	},
-	animate: function(){
-
+	}
+	animate(){
+		for (let actor in this.game.actors){
+			if (actor.canTick){
+				actor.tick();
+			}
+		}
+		this.render();
+		window.requestAnimationFrame(this.animate.bind, this);
 	}
 };
 
 // Source: src/game.js
-V3.Game = function(){
-	this.gameMode = new V3.GameMode();
-	this.view = new V3.View();
-
-};
-V3.Game.prototype = {
-	run: function(){
-		this.view.run();
+V3.Game = class{
+	constructor(){
+		this.gameMode = new V3.GameMode();
+		this.view = new V3.View(this);
+		this.actors = [];
+	}
+	addActor(actor){
+		this.actors.push(actor);
+	}
+	run(){
+		// if defined project url then load map
+		this.view.show();
 		// this.veiw.render
 		// load application info
 		// load default scene
 		// run default scene
-	},
-	setGameMode: function(gameMode){
-		// only one gameMode may be in use at any given time
-		this.gameMode = gameMode;
-	},
+	}
 	//	find where to place
-	loadMap: function(){}
+	loadMap(){}
 };

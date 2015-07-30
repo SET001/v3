@@ -1,20 +1,21 @@
 "use strict";
-V3.StateMachine = function(){
-	var states = ["inProgress", "enteringMap", "leavingMap", "aborted", "paused"];
-
-	var state = "asd";
-	this.prototype = {
-		get: function(){
-			return state;
-		},
-		set: function(state){
-			if (state in states){
-				this.state = state;
-				var event = new CustomEvent("gameStateChange", {state: state});
-				document.dispatchEvent("gameStateChange", event);
+{
+	let _states = ["inProgress", "enteringMap", "leavingMap", "aborted", "paused"];
+	let _state = "asd";
+	V3.StateMachine = class{
+		constructor(){}
+		get state(){
+			return _state;
+		}
+		set state(state){
+			console.log("setter called", state);
+			if ((state !== _state) && (_states.indexOf(state) != -1)){
+				_state = state;
+				// also should maybe trigger an event
 				return true;
 			}
 			else return false;
 		}
 	};
-};
+}
+

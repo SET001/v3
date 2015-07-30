@@ -1,12 +1,13 @@
 "use strict";
-V3.Actor = function(){
-	this.canTick = true;
-};
-V3.Actor.prototype = {
-	beginPlay: function(){
+V3.Actor = class{
+	constructor(){
+		this.canTick = false;
+		this.components = [];
+	}
+	beginPlay(){
 
-	},
-	tick: function(deltaSeconds){
+	}
+	tick(deltaSeconds){
 		if(deltaSeconds){}
 	}
 };
