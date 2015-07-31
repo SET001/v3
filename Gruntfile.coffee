@@ -2,7 +2,7 @@ module.exports = (grunt) ->
 	grunt.initConfig
 		watch:
 			scripts:
-				files: ['src/*.js']
+				files: ['src/**/*.js']
 				tasks: ['default']
 				options: {}
 		concat:
@@ -18,7 +18,8 @@ module.exports = (grunt) ->
 					'src/pawn.js'
 					'src/gameMode.js'
 					'src/stateMachine.js'
-					'src/view.js'
+					'src/views/view.js'
+					'src/views/defaultGameView.js'
 					'src/game.js'
 				]
 				dest: 'build/v3.js'

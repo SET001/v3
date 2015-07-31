@@ -56,9 +56,9 @@ var V3 = {
 		this.setSize();
 		this.container.appendChild(this.renderer.domElement);
 
-		window.addEventListener("resize", function(){
+		// window.addEventListener("resize", function(){
 			// @setSize.call @)
-		});
+		// });
 		this.animate();
 	},
 
@@ -97,8 +97,10 @@ V3.Controls = function(){
 // Source: src/actor.js
 V3.Actor = class{
 	constructor(){
+		this.mesh = null;
 		this.canTick = false;
 		this.components = [];
+		this.inputComponent = null;
 	}
 	beginPlay(){
 
@@ -106,10 +108,21 @@ V3.Actor = class{
 	tick(deltaSeconds){
 		if(deltaSeconds){}
 	}
+	init(){}
+
+	// position - Vector3
+	setPosition(position){
+		if (this.mesh){
+			this.mesh.setPosition(position);
+		}
+	}
 };
 
 // Source: src/pawn.js
 V3.Pawn = class extends V3.Actor{
+	constructor(){
+		super();
+	}
 };
 
 
@@ -117,15 +130,16 @@ V3.Pawn = class extends V3.Actor{
 V3.GameMode = class{
 	constructor(){
 		this.state = new V3.StateMachine();
-		this.pawn = new V3.Pawn();
-		this.pawn.beginPlay();
+		this.defaultPawn = null;
+		// this.mainPawn.beginPlay();	// this should be triggered somewhere else, not in constructor
 		// only one controls class may be in use at any given time
-		this.controls = new V3.Controls();
+		// this.controls = new V3.Controls();
 	}
 	// game pausing
 	// levels transitions
 	// actors spawning
 	//
+	startPlay(){}
 };
 
 // Source: src/stateMachine.js
@@ -150,69 +164,131 @@ V3.GameMode = class{
 }
 
 
-// Source: src/view.js
-V3.View = class{
-	constructor(game){
-		this.game = game;
-		this.renderer = new THREE.WebGLRenderer({antialias: V3.config.renderer.antialias});
-		this.renderer.autoClear = false;
-		this.renderer.shadowMapEnabled = V3.config.renderer.shadowMapEnabled;
-		this.renderer.shadowMapType = V3.config.renderer.shadowMapType;
-		this.renderer.shadowMapHeight = V3.config.renderer.shadowMapHeight;
-		this.renderer.shadowMapWidth = V3.config.renderer.shadowMapWidth;
+// Source: src/views/view.js
+{
+	let _camera = null;
+	let _scene = null;
+	V3.View = class{
+		constructor(){
+			var self = this;
+			this.game = null;
+			this.renderer = new THREE.WebGLRenderer({antialias: V3.config.renderer.antialias});
+			this.renderer.autoClear = false;
+			this.renderer.shadowMapEnabled = V3.config.renderer.shadowMapEnabled;
+			this.renderer.shadowMapType = V3.config.renderer.shadowMapType;
+			this.renderer.shadowMapHeight = V3.config.renderer.shadowMapHeight;
+			this.renderer.shadowMapWidth = V3.config.renderer.shadowMapWidth;
 
-		this.container = V3.config.container ? V3.config.container : document.body;
+			this.container = V3.config.container ? V3.config.container : document.body;
+			this.setSize();
+			this.container.appendChild(this.renderer.domElement);
 
-		this.scene = null;
-		this.setSize();
-		this.container.appendChild(this.renderer.domElement);
-	}
-	setSize(){
-		this.renderer.setSize(this.container.offsetWidth, this.container.offsetHeight);
-		if (this.camera){
+			window.addEventListener("resize", function(){
+				self.setSize();
+			});
+		}
+
+		get camera(){
+			if (!_camera){
+				_camera = new THREE.PerspectiveCamera(45, this.renderer.domElement.width / this.renderer.domElement.height, 1, 20000);
+				_camera.position.set(10, 10, 10);
+				_camera.lookAt(this.scene.position);
+				_camera.rotation.y = 45 * Math.PI / 180;
+				this.scene.add(_camera);
+			}
+			return _camera;
+		}
+
+		set camera(camera){_camera = camera;}
+
+		setSize(){
+			this.renderer.setSize(this.container.offsetWidth, this.container.offsetHeight);
 			this.camera.aspect = this.container.offsetWidth / this.container.offsetHeight;
 			this.camera.updateProjectionMatrix();
 		}
-	}
-	show(){
-		if (!this.scene){
-			this.scene = THREE.Scene();
-		}
-		this.animate();
-	}
-	render(){
-		this.renderer.render(this.scene, this.camera);
-		this.renderer.render(this.sceneHelpers, this.camera);
-	}
-	animate(){
-		for (let actor in this.game.actors){
-			if (actor.canTick){
-				actor.tick();
+		show(){
+			if (!this.scene){
+				this.scene = THREE.Scene();
 			}
+			this.animate();
 		}
-		this.render();
-		window.requestAnimationFrame(this.animate.bind, this);
+		render(){
+			this.renderer.render(this.scene, this.camera);
+			// this.renderer.render(this.sceneHelpers, this.camera);
+		}
+		animate(){
+			for (let pawn in this.game.pawns){
+				if (pawn.canTick){
+					pawn.tick();
+				}
+			}
+			this.render();
+			// window.requestAnimationFrame(this.animate.bind, this);
+		}
+		get scene(){
+			if (!_scene){
+				_scene = new THREE.Scene();
+			}
+			return _scene;
+		}
+		set scene(scene){
+			_scene = scene;
+		}
+	};
+}
+
+// Source: src/views/defaultGameView.js
+V3.defaultGameView  = class extends V3.View{
+	constructor(){
+		super();
+		var floorSize = 50;
+		var geometry = new THREE.PlaneBufferGeometry(floorSize, floorSize);
+		var material = new THREE.MeshBasicMaterial( {color: 0xCCCCCC, side: THREE.DoubleSide} );
+		var floor = new THREE.Mesh(geometry, material);
+		floor.position.set(0, 0, 0);
+		floor.rotation.x = THREE.Math.degToRad(90);
+		floor.name = "Floor";
+		this.scene.add(floor);
+		this.scene.add(new THREE.AmbientLight(0x555555));
+	}
+	init(){
+
 	}
 };
 
 // Source: src/game.js
-V3.Game = class{
-	constructor(){
-		this.gameMode = new V3.GameMode();
-		this.view = new V3.View(this);
-		this.actors = [];
-	}
-	addActor(actor){
-		this.actors.push(actor);
-	}
-	run(){
-		// if defined project url then load map
-		this.view.show();
-		// this.veiw.render
-		// load application info
-		// load default scene
-		// run default scene
-	}
-	//	find where to place
-	loadMap(){}
-};
+{
+	let _view=null;
+
+	V3.Game = class{
+		constructor(){
+			this.mode = new V3.GameMode();
+			this.pawns = [];
+		}
+		set view(view){
+			_view = view;
+			_view.game = this;
+		}
+
+		get view(){
+			if(!_view){
+				this.view = new V3.defaultGameView();
+			}
+			return _view;
+		}
+		addPawn(pawn){
+			if (pawn.mesh){
+				this.view.scene.add(pawn.mesh);
+			}
+			this.pawns.push(pawn);
+		}
+		run(){
+			// if defined project url then load map
+			this.view.show();
+			// load default scene
+			// run default scene
+		}
+		//	find where to place
+		loadMap(){}
+	};
+}

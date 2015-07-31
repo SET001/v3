@@ -55,9 +55,9 @@ var V3 = {
 		this.setSize();
 		this.container.appendChild(this.renderer.domElement);
 
-		window.addEventListener("resize", function(){
+		// window.addEventListener("resize", function(){
 			// @setSize.call @)
-		});
+		// });
 		this.animate();
 	},
 

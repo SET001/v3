@@ -12,7 +12,8 @@
     "test",
     "tests"
   ],
-  "dependencies": {
+  "devDependencies": {
+    "lodash": "~3.10.0",
     "threejs": "*"
   }
 }
