@@ -17,7 +17,23 @@ module.exports = function(config) {
     files: [
         'bower_components/threejs/build/three.js',
         'bower_components/lodash/lodash.js',
-        'build/v3.js',
+
+        'src/v3.js',
+        'src/es/systems/*.js',
+        'src/es/components/*.js',
+        'src/es/es.js',
+        'src/gameObject.js',
+        'src/actor.js',
+        'src/pawn.js',
+        'src/spawner.js',
+        'src/cubePawn.js',
+        'src/meshes/static/*.js',
+        'src/gameMode.js',
+        'src/stateMachine.js',
+        'src/views/view.js',
+        'src/views/defaultGameView.js',
+        'src/game.js',
+
         'spec/*-spec.js'
     ],
 

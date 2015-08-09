@@ -6,12 +6,7 @@
 		constructor(){
 			var self = this;
 			this.game = null;
-			this.renderer = new THREE.WebGLRenderer({antialias: V3.config.renderer.antialias});
-			this.renderer.autoClear = false;
-			this.renderer.shadowMapEnabled = V3.config.renderer.shadowMapEnabled;
-			this.renderer.shadowMapType = V3.config.renderer.shadowMapType;
-			this.renderer.shadowMapHeight = V3.config.renderer.shadowMapHeight;
-			this.renderer.shadowMapWidth = V3.config.renderer.shadowMapWidth;
+
 
 			this.container = V3.config.container ? V3.config.container : document.body;
 			this.setSize();
@@ -47,17 +42,22 @@
 			this.animate();
 		}
 		render(){
+			this.scene.updateMatrixWorld();
 			this.renderer.render(this.scene, this.camera);
 			// this.renderer.render(this.sceneHelpers, this.camera);
 		}
-		animate(){
-			for (let pawn in this.game.pawns){
+		animate(time){
+			for (let i in this.game.pawns){
+				var pawn = this.game.pawns[i];
 				if (pawn.canTick){
-					pawn.tick();
+					pawn.tick(time);
 				}
 			}
+			// for (i in this.game.systems){
+			// 	this.game.systems[i].run();
+			// }
 			this.render();
-			// window.requestAnimationFrame(this.animate.bind, this);
+			window.requestAnimationFrame(this.animate.bind(this));
 		}
 		get scene(){
 			if (!_scene){

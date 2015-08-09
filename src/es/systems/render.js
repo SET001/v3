@@ -1,0 +1,59 @@
+"use strict";
+V3.RenderSystem = {
+
+	name: 'Render',
+	camera: null,
+	renderer: null,
+	scene: null,
+	controller: function(entities){
+		this.renderer.render(this.scene, this.camera);
+	},
+	init: function(){
+		var self = this;
+		this.scene = new THREE.Scene();
+		this.container = V3.config.container ? V3.config.container : document.body;
+
+		this.renderer = new THREE.WebGLRenderer({antialias: V3.config.renderer.antialias});
+		this.renderer.autoClear = false;
+		this.renderer.shadowMapEnabled = V3.config.renderer.shadowMapEnabled;
+		this.renderer.shadowMapType = V3.config.renderer.shadowMapType;
+		this.renderer.shadowMapHeight = V3.config.renderer.shadowMapHeight;
+		this.renderer.shadowMapWidth = V3.config.renderer.shadowMapWidth;
+		this.setCamera();
+		this.setSize();
+		this.container.appendChild(this.renderer.domElement);
+		if (V3.config.showAxis)
+			this.scene.add(new THREE.AxisHelper(V3.config.axisLength));
+
+		window.addEventListener("resize", function(){
+			self.setSize();
+		});
+		return true;
+	},
+
+	setCamera: function(){
+		this.camera = new THREE.PerspectiveCamera(50, this.renderer.domElement.width / this.renderer.domElement.height, 1, 20000);
+		this.camera.position.set(0, 50, 10);
+		this.camera.lookAt(new THREE.Vector3(0, 0, 0));
+		// this.camera.rotation.y = 45 * Math.PI / 180;
+		this.scene.add(this.camera);
+	},
+
+	setSize: function(){
+		this.renderer.setSize(this.container.offsetWidth, this.container.offsetHeight);
+		this.camera.aspect = this.container.offsetWidth / this.container.offsetHeight;
+		this.camera.updateProjectionMatrix();
+	},
+	update: function(entity){
+		var obj = null;
+		for (var i in this.scene.children){
+			if(this.scene.children[i].uid === entity.id){
+				obj = this.scene.children[i];
+				break;
+			}
+		}
+		if (obj){
+			obj.position.set(entity.components.position.x, entity.components.position.y, entity.components.position.z);
+		}
+	}
+};
