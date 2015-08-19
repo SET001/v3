@@ -87,75 +87,105 @@ V3.InputSystem = {
 			var entity = entities[entityId];
 			if ('input' in entity.components){
 				if (this.actions.left){
-					entity.components.position.x -= entity.components.input.movingSpeed;
-					V3.RenderSystem.update(entity);
+					entity.components.render.mesh.translateX(-0.5);
 				}
 				if (this.actions.right){
-					entity.components.position.x += entity.components.input.movingSpeed;
-					V3.RenderSystem.update(entity);
+					entity.components.render.mesh.translateX(+0.5);
 				}
 				if (this.actions.forward){
-					entity.components.position.z -= entity.components.input.movingSpeed;
-					V3.RenderSystem.update(entity);
+					entity.components.render.mesh.translateZ(-0.5);
 				}
 				if (this.actions.backward){
-					entity.components.position.z += entity.components.input.movingSpeed;
-					V3.RenderSystem.update(entity);
+					entity.components.render.mesh.translateZ(+0.5);
 				}
 			}
 		}
 	},
+	onNewEntity: function(e){
+		if ('input' in e.detail.components){
+			this.components.push(e.detail.components.input);
+		}
+	},
+	mouseMove: function(e){
+		for(let i in this.components){
+			var component = this.components[i];
+			if (Math.abs(e.movementX)<100 && Math.abs(e.movementY) < 100){
+				if (e.movementX>0 && component.axisMappings.mouseX[1])
+					component.axisMappings.mouseX[1](e.movementX);
+				if (e.movementX<0 && component.axisMappings.mouseX[-1])
+					component.axisMappings.mouseX[-1](e.movementX);
+				if (e.movementY<0 && component.axisMappings.mouseY[-1])
+					component.axisMappings.mouseY[-1](e.movementY);
+				if (e.movementY>0 && component.axisMappings.mouseY[1])
+					component.axisMappings.mouseY[1](e.movementY);
+			}
+		}
+	},
+	mouseClick: function(){
+
+	},
+	mouseWheel: function(e){
+		for(let i in this.components){
+			var component = this.components[i];
+			component.actionMappings.wheelUp(e.wheelDelta);
+		}
+	},
+	keyboardEvent: function(){
+
+	},
 	init: function(){
 		var self = this;
 		var mouse = new THREE.Vector2();
-		var pointerLockEnabled = false;
+		this.pointerLockEnabled = false;
 
     var element = V3.container;
 
     var havePointerLock = 'pointerLockElement' in document;
-
+    var mouseCallback = self.mouseMove.bind(self);
     // mouse
     if (havePointerLock){
-    	var pitchObject = new THREE.Object3D();
-    	pitchObject.add(V3.RenderSystem.camera);
+   //  	var m = V3.RenderSystem.camera;
+   //  	var pitchObject = new THREE.Object3D();
+   //  	pitchObject.add(V3.RenderSystem.camera);
 
-			var yawObject = new THREE.Object3D();
-			yawObject.position.y = 10;
-			yawObject.position.x = 0;
-			yawObject.position.z = 0;
-			yawObject.add( pitchObject );
-			V3.RenderSystem.scene.add(yawObject);
+   //  	var pitchObject = V3.RenderSystem.camera.parent;
+   //  	pitchObject.add(V3.RenderSystem.camera);
+
+			// var yawObject = new THREE.Object3D();
+			// yawObject.position.y = 0;
+			// yawObject.position.x = 0;
+			// yawObject.position.z = 0;
+			// yawObject.add( pitchObject );
+			// m.add(yawObject);
+			// V3.RenderSystem.scene.add(yawObject);
 
 			var PI_2 = Math.PI / 2;
 
     	var moveCallback = function(e){
-    		console.log("e");
-    		var movementX = event.movementX || 0;
-				var movementY = event.movementY || 0;
-				if (Math.abs(movementX)<100 && Math.abs(movementY) < 100){
-					yawObject.rotation.y -= movementX * 0.003;
-					pitchObject.rotation.x -= movementY * 0.003;
+    // 		var movementX = event.movementX || 0;
+				// var movementY = event.movementY || 0;
+				// if (Math.abs(movementX)<100 && Math.abs(movementY) < 100){
+				// 	yawObject.rotation.y -= movementX * 0.003;
+				// 	pitchObject.rotation.x -= movementY * 0.003;
 
-					pitchObject.rotation.x = Math.max( - PI_2, Math.min( PI_2, pitchObject.rotation.x ) );
-				};
+				// 	pitchObject.rotation.x = Math.max( - PI_2, Math.min( PI_2, pitchObject.rotation.x ) );
+				// };
     	};
     	document.onclick = function(){
-    		if (!pointerLockEnabled){
+    		if (!this.pointerLockEnabled){
 					element.requestPointerLock();
     		}
     	};
-			document.addEventListener('mousewheel', function(e){
-    		if (pointerLockEnabled){
-					V3.RenderSystem.camera.position.y -= e.wheelDelta/120*0.1;
-    		}
-    	});
+			document.addEventListener('mousewheel', self.mouseWheel.bind(self));
     	document.addEventListener('pointerlockchange', function(){
-				if(pointerLockEnabled = (document.pointerLockElement == element)){
-					document.addEventListener("mousemove", moveCallback, false);
+    		self.pointerLockEnabled = (document.pointerLockElement == element);
+				if(self.pointerLockEnabled){
+					document.addEventListener("mousemove", mouseCallback, false);
 				}else{
-					document.removeEventListener("mousemove", moveCallback, false);
+					document.removeEventListener("mousemove", mouseCallback, false);
 				};
 			}, false);
+			document.addEventListener("entity_new", self.onNewEntity.bind(self));
     }
 
     // keyboard
@@ -204,9 +234,12 @@ V3.RenderSystem = {
 	renderer: null,
 	scene: null,
 	controller: function(entities){
-		this.renderer.render(this.scene, this.camera);
+		if (this.camera){
+			this.renderer.render(this.scene, this.camera);
+		}
 	},
 	init: function(){
+		console.log("Initialising render system");
 		var self = this;
 		this.scene = new THREE.Scene();
 		this.container = V3.config.container ? V3.config.container : document.body;
@@ -217,30 +250,35 @@ V3.RenderSystem = {
 		this.renderer.shadowMapType = V3.config.renderer.shadowMapType;
 		this.renderer.shadowMapHeight = V3.config.renderer.shadowMapHeight;
 		this.renderer.shadowMapWidth = V3.config.renderer.shadowMapWidth;
-		this.setCamera();
-		this.setSize();
 		this.container.appendChild(this.renderer.domElement);
-		if (V3.config.showAxis)
+		if (V3.config.showAxis){
 			this.scene.add(new THREE.AxisHelper(V3.config.axisLength));
+		}
 
-		window.addEventListener("resize", function(){
-			self.setSize();
-		});
+		document.addEventListener("entity_new", this.onNewEntity.bind(this));
+		window.addEventListener("resize", this.setSize.bind(this));
 		return true;
 	},
-
+	onNewEntity: function(e){
+		if ('camera' in e.detail.components){
+			this.camera = e.detail.components.camera.object;
+	    this.setSize();
+		}
+	},
 	setCamera: function(){
 		this.camera = new THREE.PerspectiveCamera(50, this.renderer.domElement.width / this.renderer.domElement.height, 1, 20000);
 		this.camera.position.set(0, 50, 10);
 		this.camera.lookAt(new THREE.Vector3(0, 0, 0));
 		// this.camera.rotation.y = 45 * Math.PI / 180;
-		this.scene.add(this.camera);
+		// this.scene.add(this.camera);
 	},
 
 	setSize: function(){
 		this.renderer.setSize(this.container.offsetWidth, this.container.offsetHeight);
-		this.camera.aspect = this.container.offsetWidth / this.container.offsetHeight;
-		this.camera.updateProjectionMatrix();
+		if (this.camera){
+			this.camera.aspect = this.container.offsetWidth / this.container.offsetHeight;
+			this.camera.updateProjectionMatrix();
+		}
 	},
 	update: function(entity){
 		var obj = null;
@@ -271,8 +309,29 @@ V3.TickSystem = {
 
 // Source: src/es/components/camera.js
 V3.CameraComponent = class{
-	constructor(){
-		// this.system = 'collision';
+	constructor(type){
+		this.system = 'camera';
+		if (!type) type = 'perspective';
+		var fow = 50;
+		var near = 1;
+		var far = 20000;
+		var aspect = V3.RenderSystem.renderer.domElement.width / V3.RenderSystem.renderer.domElement.height;
+		var left = V3.RenderSystem.renderer.domElement.width / -2;
+		var right = V3.RenderSystem.renderer.domElement.width / 2;
+		var top = V3.RenderSystem.renderer.domElement.height / 2;
+		var bottom = V3.RenderSystem.renderer.domElement.height / -2;
+		var cubeResolution = 128;
+		switch (type.toLowerCase()){
+			case 'perspective':
+				this.object = new THREE.PerspectiveCamera(fow, aspect, near, far);
+				break;
+			case 'orthographic':
+				this.object = new THREE.OrthographicCamera(left, right, top, bottom, near, far);
+				break;
+			case 'cube':
+				this.object = new THREE.CubeCamera(near, far, cubeResolution );
+				break;
+		}
 	}
 }
 
@@ -285,9 +344,17 @@ V3.CollidableComponent = class{
 
 // Source: src/es/components/input.js
 V3.InputComponent = class{
-	constructor(actor){
+	constructor(){
 		this.system = 'input';
 		this.movingSpeed = 10;
+		this.axisMappings = {
+			mouseX:{},
+			mouseY:{},
+		}
+		this.actionMappings = {
+			wheelUp:{},
+			wheelDown:{}
+		}
 	}
 	register(){
 		V3.InputSystem.components.push(this);
@@ -336,16 +403,24 @@ V3.ES ={
 		systems: [],
 		addEntity: function(entity){
 			this.entities[entity.id] = entity;
-			var mesh = entity.components.render.mesh;
+			var mesh = entity.components.render.mesh;			//	???
 			if ('render' in entity.components && mesh){
-
 				mesh.uid = entity.id;
-				if (entity.components.position) mesh.position.set(
-					entity.components.position.x,
-					entity.components.position.y,
-					entity.components.position.z);
-				V3.RenderSystem.scene.add(entity.components.render.mesh)
+				// if (entity.components.position) mesh.position.set(
+				// 	entity.components.position.x,
+				// 	entity.components.position.y,
+				// 	entity.components.position.z);
+				if ('camera' in entity.components){
+					// this.camera.position.set(0, 50, 10);
+					// V3.RenderSystem.camera.lookAt(new THREE.Vector3(0, 0, 0));
+					// this.camera.rotation.y = 45 * Math.PI / 180;
+
+					// V3.RenderSystem.scene.add(V3.RenderSystem.camera);
+				}
+				V3.RenderSystem.scene.add(mesh);
 			}
+
+			document.dispatchEvent(new CustomEvent("entity_new", {detail: entity}));
 		},
 		addSystem: function(system){
 			if (system.init && !system.init())
@@ -384,7 +459,7 @@ V3.GameObject = class{
 			var systemName = component.system.charAt(0).toUpperCase() + component.system.slice(1);
 			var setUpFunction = `setUp${systemName}Component`;
 			if (self[setUpFunction]){
-				var setup = self[setUpFunction]();
+				var setup = self[setUpFunction](component);
 				for (var attr in setup) {
 					if (setup.hasOwnProperty(attr)) component[attr] = setup[attr];
 				};
@@ -575,13 +650,14 @@ V3.GameMode = class{
 	// levels transitions
 	// actors spawning
 	//
+
 	init(){
 		this.systems.map(function(system){
 			V3.ES.Manager.addSystem(system);
 		});
 		if (this.defaultPawn){
 			var pawn = new this.defaultPawn();
-			pawn.components.push(V3.InputComponent);
+			pawn.components.push(V3.InputComponent, V3.CameraComponent);
 			pawn.register();
 		}
 	}

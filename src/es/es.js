@@ -17,16 +17,24 @@ V3.ES ={
 		systems: [],
 		addEntity: function(entity){
 			this.entities[entity.id] = entity;
-			var mesh = entity.components.render.mesh;
+			var mesh = entity.components.render.mesh;			//	???
 			if ('render' in entity.components && mesh){
-
 				mesh.uid = entity.id;
-				if (entity.components.position) mesh.position.set(
-					entity.components.position.x,
-					entity.components.position.y,
-					entity.components.position.z);
-				V3.RenderSystem.scene.add(entity.components.render.mesh)
+				// if (entity.components.position) mesh.position.set(
+				// 	entity.components.position.x,
+				// 	entity.components.position.y,
+				// 	entity.components.position.z);
+				if ('camera' in entity.components){
+					// this.camera.position.set(0, 50, 10);
+					// V3.RenderSystem.camera.lookAt(new THREE.Vector3(0, 0, 0));
+					// this.camera.rotation.y = 45 * Math.PI / 180;
+
+					// V3.RenderSystem.scene.add(V3.RenderSystem.camera);
+				}
+				V3.RenderSystem.scene.add(mesh);
 			}
+
+			document.dispatchEvent(new CustomEvent("entity_new", {detail: entity}));
 		},
 		addSystem: function(system){
 			if (system.init && !system.init())

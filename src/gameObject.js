@@ -13,7 +13,7 @@ V3.GameObject = class{
 			var systemName = component.system.charAt(0).toUpperCase() + component.system.slice(1);
 			var setUpFunction = `setUp${systemName}Component`;
 			if (self[setUpFunction]){
-				var setup = self[setUpFunction]();
+				var setup = self[setUpFunction](component);
 				for (var attr in setup) {
 					if (setup.hasOwnProperty(attr)) component[attr] = setup[attr];
 				};

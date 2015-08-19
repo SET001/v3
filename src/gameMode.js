@@ -12,13 +12,14 @@ V3.GameMode = class{
 	// levels transitions
 	// actors spawning
 	//
+
 	init(){
 		this.systems.map(function(system){
 			V3.ES.Manager.addSystem(system);
 		});
 		if (this.defaultPawn){
 			var pawn = new this.defaultPawn();
-			pawn.components.push(V3.InputComponent);
+			pawn.components.push(V3.InputComponent, V3.CameraComponent);
 			pawn.register();
 		}
 	}

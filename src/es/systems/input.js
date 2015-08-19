@@ -16,75 +16,105 @@ V3.InputSystem = {
 			var entity = entities[entityId];
 			if ('input' in entity.components){
 				if (this.actions.left){
-					entity.components.position.x -= entity.components.input.movingSpeed;
-					V3.RenderSystem.update(entity);
+					entity.components.render.mesh.translateX(-0.5);
 				}
 				if (this.actions.right){
-					entity.components.position.x += entity.components.input.movingSpeed;
-					V3.RenderSystem.update(entity);
+					entity.components.render.mesh.translateX(+0.5);
 				}
 				if (this.actions.forward){
-					entity.components.position.z -= entity.components.input.movingSpeed;
-					V3.RenderSystem.update(entity);
+					entity.components.render.mesh.translateZ(-0.5);
 				}
 				if (this.actions.backward){
-					entity.components.position.z += entity.components.input.movingSpeed;
-					V3.RenderSystem.update(entity);
+					entity.components.render.mesh.translateZ(+0.5);
 				}
 			}
 		}
 	},
+	onNewEntity: function(e){
+		if ('input' in e.detail.components){
+			this.components.push(e.detail.components.input);
+		}
+	},
+	mouseMove: function(e){
+		for(let i in this.components){
+			var component = this.components[i];
+			if (Math.abs(e.movementX)<100 && Math.abs(e.movementY) < 100){
+				if (e.movementX>0 && component.axisMappings.mouseX[1])
+					component.axisMappings.mouseX[1](e.movementX);
+				if (e.movementX<0 && component.axisMappings.mouseX[-1])
+					component.axisMappings.mouseX[-1](e.movementX);
+				if (e.movementY<0 && component.axisMappings.mouseY[-1])
+					component.axisMappings.mouseY[-1](e.movementY);
+				if (e.movementY>0 && component.axisMappings.mouseY[1])
+					component.axisMappings.mouseY[1](e.movementY);
+			}
+		}
+	},
+	mouseClick: function(){
+
+	},
+	mouseWheel: function(e){
+		for(let i in this.components){
+			var component = this.components[i];
+			component.actionMappings.wheelUp(e.wheelDelta);
+		}
+	},
+	keyboardEvent: function(){
+
+	},
 	init: function(){
 		var self = this;
 		var mouse = new THREE.Vector2();
-		var pointerLockEnabled = false;
+		this.pointerLockEnabled = false;
 
     var element = V3.container;
 
     var havePointerLock = 'pointerLockElement' in document;
-
+    var mouseCallback = self.mouseMove.bind(self);
     // mouse
     if (havePointerLock){
-    	var pitchObject = new THREE.Object3D();
-    	pitchObject.add(V3.RenderSystem.camera);
+   //  	var m = V3.RenderSystem.camera;
+   //  	var pitchObject = new THREE.Object3D();
+   //  	pitchObject.add(V3.RenderSystem.camera);
 
-			var yawObject = new THREE.Object3D();
-			yawObject.position.y = 10;
-			yawObject.position.x = 0;
-			yawObject.position.z = 0;
-			yawObject.add( pitchObject );
-			V3.RenderSystem.scene.add(yawObject);
+   //  	var pitchObject = V3.RenderSystem.camera.parent;
+   //  	pitchObject.add(V3.RenderSystem.camera);
+
+			// var yawObject = new THREE.Object3D();
+			// yawObject.position.y = 0;
+			// yawObject.position.x = 0;
+			// yawObject.position.z = 0;
+			// yawObject.add( pitchObject );
+			// m.add(yawObject);
+			// V3.RenderSystem.scene.add(yawObject);
 
 			var PI_2 = Math.PI / 2;
 
     	var moveCallback = function(e){
-    		console.log("e");
-    		var movementX = event.movementX || 0;
-				var movementY = event.movementY || 0;
-				if (Math.abs(movementX)<100 && Math.abs(movementY) < 100){
-					yawObject.rotation.y -= movementX * 0.003;
-					pitchObject.rotation.x -= movementY * 0.003;
+    // 		var movementX = event.movementX || 0;
+				// var movementY = event.movementY || 0;
+				// if (Math.abs(movementX)<100 && Math.abs(movementY) < 100){
+				// 	yawObject.rotation.y -= movementX * 0.003;
+				// 	pitchObject.rotation.x -= movementY * 0.003;
 
-					pitchObject.rotation.x = Math.max( - PI_2, Math.min( PI_2, pitchObject.rotation.x ) );
-				};
+				// 	pitchObject.rotation.x = Math.max( - PI_2, Math.min( PI_2, pitchObject.rotation.x ) );
+				// };
     	};
     	document.onclick = function(){
-    		if (!pointerLockEnabled){
+    		if (!this.pointerLockEnabled){
 					element.requestPointerLock();
     		}
     	};
-			document.addEventListener('mousewheel', function(e){
-    		if (pointerLockEnabled){
-					V3.RenderSystem.camera.position.y -= e.wheelDelta/120*0.1;
-    		}
-    	});
+			document.addEventListener('mousewheel', self.mouseWheel.bind(self));
     	document.addEventListener('pointerlockchange', function(){
-				if(pointerLockEnabled = (document.pointerLockElement == element)){
-					document.addEventListener("mousemove", moveCallback, false);
+    		self.pointerLockEnabled = (document.pointerLockElement == element);
+				if(self.pointerLockEnabled){
+					document.addEventListener("mousemove", mouseCallback, false);
 				}else{
-					document.removeEventListener("mousemove", moveCallback, false);
+					document.removeEventListener("mousemove", mouseCallback, false);
 				};
 			}, false);
+			document.addEventListener("entity_new", self.onNewEntity.bind(self));
     }
 
     // keyboard
