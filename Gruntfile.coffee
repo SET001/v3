@@ -25,8 +25,7 @@ module.exports = (grunt) ->
 					'src/meshes/static/*.js'
 					'src/gameMode.js'
 					'src/stateMachine.js'
-					'src/views/view.js'
-					'src/views/defaultGameView.js'
+					'src/playerControllers/*.js'
 					'src/game.js'
 				]
 				dest: 'build/v3.js'

@@ -2,6 +2,7 @@
 V3.InputSystem = {
 	name: 'Input',
 	components: [],
+	controllers: [],
 	actions: {
 		forward: null,
 		backward: null,
@@ -11,44 +12,43 @@ V3.InputSystem = {
 		pitch: null,
 		yaw: null
 	},
-	controller: function(entities){
-		for (var entityId in entities){
-			var entity = entities[entityId];
-			if ('input' in entity.components){
-				if (this.actions.left){
-					entity.components.render.mesh.translateX(-0.5);
-				}
-				if (this.actions.right){
-					entity.components.render.mesh.translateX(+0.5);
-				}
-				if (this.actions.forward){
-					entity.components.render.mesh.translateZ(-0.5);
-				}
-				if (this.actions.backward){
-					entity.components.render.mesh.translateZ(+0.5);
-				}
-			}
-		}
-	},
+	// controller: function(entities){
+	// 	for (var entityId in entities){
+	// 		var entity = entities[entityId];
+	// 		if ('input' in entity.components){
+	// 			if (this.actions.left){
+	// 				entity.components.render.mesh.translateX(-0.5);
+	// 			}
+	// 			if (this.actions.right){
+	// 				entity.components.render.mesh.translateX(+0.5);
+	// 			}
+	// 			if (this.actions.forward){
+	// 				entity.components.render.mesh.translateZ(-0.5);
+	// 			}
+	// 			if (this.actions.backward){
+	// 				entity.components.render.mesh.translateZ(+0.5);
+	// 			}
+	// 		}
+	// 	}
+	// },
 	onNewEntity: function(e){
 		if ('input' in e.detail.components){
-			this.components.push(e.detail.components.input);
+			this.controllers.push(new V3.RPGPlayerController(e.detail));
 		}
 	},
 	mouseMove: function(e){
-		for(let i in this.components){
-			var component = this.components[i];
+		this.controllers.map(function(controller){
 			if (Math.abs(e.movementX)<100 && Math.abs(e.movementY) < 100){
-				if (e.movementX>0 && component.axisMappings.mouseX[1])
-					component.axisMappings.mouseX[1](e.movementX);
-				if (e.movementX<0 && component.axisMappings.mouseX[-1])
-					component.axisMappings.mouseX[-1](e.movementX);
-				if (e.movementY<0 && component.axisMappings.mouseY[-1])
-					component.axisMappings.mouseY[-1](e.movementY);
-				if (e.movementY>0 && component.axisMappings.mouseY[1])
-					component.axisMappings.mouseY[1](e.movementY);
+				if (e.movementX>0)
+			 		controller.mouseRight(e.movementX);
+			 	if (e.movementX<0)
+			 		controller.mouseLeft(e.movementX);
+			 	if (e.movementY<0)
+			 		controller.mouseUp(e.movementY);
+			 	if (e.movementY>0)
+			 		controller.mouseDown(e.movementY);
 			}
-		}
+		});
 	},
 	mouseClick: function(){
 
@@ -62,7 +62,7 @@ V3.InputSystem = {
 	keyboardEvent: function(){
 
 	},
-	init: function(){
+	init: function(controllerClass){
 		var self = this;
 		var mouse = new THREE.Vector2();
 		this.pointerLockEnabled = false;

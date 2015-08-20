@@ -9,6 +9,7 @@ V3.GameObject = class{
 
 		this.components.map(function(componentClass){
 			var component = new componentClass();
+			component.entity = self.entity;
 			self.entity.addComponent(component);
 			var systemName = component.system.charAt(0).toUpperCase() + component.system.slice(1);
 			var setUpFunction = `setUp${systemName}Component`;
@@ -21,14 +22,5 @@ V3.GameObject = class{
 		});
 		V3.ES.Manager.addEntity(self.entity);
 		return self.entity;
-		// if (this.mesh){
-		// 	object.components.renderable.mesh = this.mesh;
-		// 	V3.RenderSystem.scene.add(this.mesh);
-		// }
-		// if (this.canTick && this.tick){
-		// 	object.components.tickable = new V3.TickComponent();
-		// 	object.components.tickable.callback = this.tick;
-		// }
-		// return object.components;
 	}
 };

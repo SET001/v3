@@ -1,8 +1,6 @@
 "use strict";
 
 {
-	let _view=null;
-
 	V3.Game = class{
 		constructor(){
 			this.mode = new V3.GameMode();
