@@ -37,13 +37,6 @@ V3.RenderSystem = {
 	    this.setSize();
 		}
 	},
-	setCamera: function(){
-		this.camera = new THREE.PerspectiveCamera(50, this.renderer.domElement.width / this.renderer.domElement.height, 1, 20000);
-		this.camera.position.set(0, 50, 10);
-		this.camera.lookAt(new THREE.Vector3(0, 0, 0));
-		// this.camera.rotation.y = 45 * Math.PI / 180;
-		// this.scene.add(this.camera);
-	},
 
 	setSize: function(){
 		this.renderer.setSize(this.container.offsetWidth, this.container.offsetHeight);

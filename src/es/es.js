@@ -24,13 +24,6 @@ V3.ES ={
 				// 	entity.components.position.x,
 				// 	entity.components.position.y,
 				// 	entity.components.position.z);
-				if ('camera' in entity.components){
-					// this.camera.position.set(0, 50, 10);
-					// V3.RenderSystem.camera.lookAt(new THREE.Vector3(0, 0, 0));
-					// this.camera.rotation.y = 45 * Math.PI / 180;
-
-					// V3.RenderSystem.scene.add(V3.RenderSystem.camera);
-				}
 				V3.RenderSystem.scene.add(mesh);
 			}
 
