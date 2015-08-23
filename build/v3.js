@@ -104,7 +104,7 @@ V3.InputSystem = {
 	// },
 	onNewEntity: function(e){
 		if ('input' in e.detail.components){
-			this.controllers.push(new V3.RPGPlayerController(e.detail));
+			this.controllers.push(new this.controllerClass(e.detail));
 		}
 	},
 	mouseMove: function(e){
@@ -125,15 +125,14 @@ V3.InputSystem = {
 
 	},
 	mouseWheel: function(e){
-		for(let i in this.components){
-			var component = this.components[i];
-			component.actionMappings.wheelUp(e.wheelDelta);
-		}
+		this.controllers.map(function(controller){
+			controller.mouseWheel(e.wheelDelta)
+		});
 	},
 	keyboardEvent: function(){
 
 	},
-	init: function(controllerClass){
+	init: function(){
 		var self = this;
 		var mouse = new THREE.Vector2();
 		this.pointerLockEnabled = false;
@@ -349,6 +348,7 @@ V3.InputComponent = class{
 		this.system = 'input';
 		this.movingSpeed = 10;
 		this.mouseSpeed = 0.003;
+		this.wheelSpeed = 0.7;
 		this.axisMappings = {
 			mouseX:{},
 			mouseY:{},
@@ -470,6 +470,61 @@ V3.GameObject = class{
 		});
 		V3.ES.Manager.addEntity(self.entity);
 		return self.entity;
+	}
+};
+
+// Source: src/actor.js
+V3.Actor = class{
+	constructor(){
+		this.mesh = null;
+		this.canTick = false;
+		this.components = [V3.PositionComponent, V3.RenderableComponent];
+	}
+	beginPlay(){
+
+	}
+	tick(deltaSeconds){
+		if(deltaSeconds){}
+	}
+	init(){}
+
+	set position(vector3){
+		this.mesh.position = vector3;
+	}
+	get position(){
+		return this.mesh.position;
+	}
+	onClick(){
+
+	}
+
+	register(){
+		var self = this;
+		var entity = new V3.ES.Entity();
+
+		this.components.map(function(componentClass){
+			var component = new componentClass();
+			entity.addComponent(component);
+			var systemName = component.system.charAt(0).toUpperCase() + component.system.slice(1);
+			var setUpFunction = `setUp${systemName}Component`;
+			if (self[setUpFunction]){
+				var setup = self[setUpFunction]();
+				for (var attr in setup) {
+					if (setup.hasOwnProperty(attr)) component[attr] = setup[attr];
+				};
+			}
+		});
+		V3.ES.Manager.addEntity(entity);
+		return entity;
+		// if (this.mesh){
+		// 	object.components.renderable.mesh = this.mesh;
+		// 	V3.RenderSystem.scene.add(this.mesh);
+		// }
+		// if (this.canTick && this.tick){
+		// 	object.components.tickable = new V3.TickComponent();
+		// 	object.components.tickable.callback = this.tick;
+		// }
+		// return object.components;
 	}
 };
 
@@ -646,8 +701,12 @@ V3.GameMode = class{
 	//
 
 	init(){
+		var self = this;
 		this.systems.map(function(system){
 			V3.ES.Manager.addSystem(system);
+			if (system.name === 'Input'){
+				system.controllerClass = self.playerController;
+			};
 		});
 		if (this.defaultPawn){
 			var pawn = new this.defaultPawn();
@@ -685,12 +744,36 @@ V3.GameMode = class{
 V3.BasicPlayerController = class{
 	constructor(entity){
 		this.entity = entity;
+		this.mesh = this.entity.components.render.mesh;
+		this.camera = this.entity.components.camera.object;
+		this.mouseSpeed = this.entity.components.input.mouseSpeed;
+		this.wheelSpeed = this.entity.components.input.wheelSpeed;
 	}
 };
 
 // Source: src/playerControllers/fps.js
 V3.FPSPlayerController = class extends V3.BasicPlayerController{
 
+	constructor(entity){
+		super(entity);
+		this.pitchObject = new THREE.Object3D();
+		this.pitchObject.add(this.camera);
+		this.mesh.add(this.pitchObject);
+	}
+
+	mouseUp(movement){
+		this.pitchObject.rotation.x -= movement*this.mouseSpeed;
+	}
+	mouseDown(movement){
+		this.pitchObject.rotation.x -= movement*this.mouseSpeed;
+	}
+	mouseLeft(movement){
+		this.mesh.rotation.y -= movement*this.mouseSpeed;
+	}
+	mouseRight(movement){
+		this.mesh.rotation.y -= movement*this.mouseSpeed;
+	}
+	mouseWheel(movement){}
 };
 
 // Source: src/playerControllers/rpg.js
@@ -698,17 +781,16 @@ V3.RPGPlayerController = class extends V3.BasicPlayerController{
 
 	constructor(entity){
 		super(entity);
-		this.mesh = this.entity.components.render.mesh;
-		this.mouseSpeed = this.entity.components.input.mouseSpeed;
+		this.pitchObject = new THREE.Object3D();
+		this.pitchObject.add(this.camera);
+		this.mesh.add(this.pitchObject);
 	}
-	main(){
 
-	}
 	mouseUp(movement){
-		this.mesh.rotation.x -= movement*this.mouseSpeed;
+		this.pitchObject.rotation.x -= movement*this.mouseSpeed;
 	}
 	mouseDown(movement){
-		this.mesh.rotation.x -= movement*this.mouseSpeed;
+		this.pitchObject.rotation.x -= movement*this.mouseSpeed;
 	}
 	mouseLeft(movement){
 		this.mesh.rotation.y -= movement*this.mouseSpeed;
@@ -717,10 +799,7 @@ V3.RPGPlayerController = class extends V3.BasicPlayerController{
 		this.mesh.rotation.y -= movement*this.mouseSpeed;
 	}
 	mouseWheel(movement){
-
-	}
-	mouseClick(){
-
+		this.camera.translateZ(-movement/120*this.wheelSpeed);
 	}
 };
 

@@ -33,7 +33,7 @@ V3.InputSystem = {
 	// },
 	onNewEntity: function(e){
 		if ('input' in e.detail.components){
-			this.controllers.push(new V3.RPGPlayerController(e.detail));
+			this.controllers.push(new this.controllerClass(e.detail));
 		}
 	},
 	mouseMove: function(e){
@@ -54,15 +54,14 @@ V3.InputSystem = {
 
 	},
 	mouseWheel: function(e){
-		for(let i in this.components){
-			var component = this.components[i];
-			component.actionMappings.wheelUp(e.wheelDelta);
-		}
+		this.controllers.map(function(controller){
+			controller.mouseWheel(e.wheelDelta)
+		});
 	},
 	keyboardEvent: function(){
 
 	},
-	init: function(controllerClass){
+	init: function(){
 		var self = this;
 		var mouse = new THREE.Vector2();
 		this.pointerLockEnabled = false;

@@ -14,8 +14,12 @@ V3.GameMode = class{
 	//
 
 	init(){
+		var self = this;
 		this.systems.map(function(system){
 			V3.ES.Manager.addSystem(system);
+			if (system.name === 'Input'){
+				system.controllerClass = self.playerController;
+			};
 		});
 		if (this.defaultPawn){
 			var pawn = new this.defaultPawn();
