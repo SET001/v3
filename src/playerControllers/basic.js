@@ -4,6 +4,7 @@ V3.BasicPlayerController = class{
 		this.mesh = this.entity.components.render.mesh;
 		this.camera = this.entity.components.camera.object;
 		this.mouseSpeed = this.entity.components.input.mouseSpeed;
+		this.movingSpeed = this.entity.components.input.movingSpeed;
 		this.wheelSpeed = this.entity.components.input.wheelSpeed;
 	}
 };

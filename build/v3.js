@@ -74,34 +74,18 @@ V3.InputSystem = {
 	name: 'Input',
 	components: [],
 	controllers: [],
-	actions: {
-		forward: null,
-		backward: null,
-		left: null,
-		right: null,
-		jump: null,
-		pitch: null,
-		yaw: null
+	actions: {},
+	controller: function(){
+		var self = this;
+		this.controllers.map(function(controller){
+			for(let action in self.actions){
+				if (self.actions[action]){
+					var foo = controller.entity.components.input.keyMappings[action];
+					if (controller[foo]) controller[foo]();
+				}
+			}
+		});
 	},
-	// controller: function(entities){
-	// 	for (var entityId in entities){
-	// 		var entity = entities[entityId];
-	// 		if ('input' in entity.components){
-	// 			if (this.actions.left){
-	// 				entity.components.render.mesh.translateX(-0.5);
-	// 			}
-	// 			if (this.actions.right){
-	// 				entity.components.render.mesh.translateX(+0.5);
-	// 			}
-	// 			if (this.actions.forward){
-	// 				entity.components.render.mesh.translateZ(-0.5);
-	// 			}
-	// 			if (this.actions.backward){
-	// 				entity.components.render.mesh.translateZ(+0.5);
-	// 			}
-	// 		}
-	// 	}
-	// },
 	onNewEntity: function(e){
 		if ('input' in e.detail.components){
 			this.controllers.push(new this.controllerClass(e.detail));
@@ -120,9 +104,6 @@ V3.InputSystem = {
 			 		controller.mouseDown(e.movementY);
 			}
 		});
-	},
-	mouseClick: function(){
-
 	},
 	mouseWheel: function(e){
 		this.controllers.map(function(controller){
@@ -143,33 +124,6 @@ V3.InputSystem = {
     var mouseCallback = self.mouseMove.bind(self);
     // mouse
     if (havePointerLock){
-   //  	var m = V3.RenderSystem.camera;
-   //  	var pitchObject = new THREE.Object3D();
-   //  	pitchObject.add(V3.RenderSystem.camera);
-
-   //  	var pitchObject = V3.RenderSystem.camera.parent;
-   //  	pitchObject.add(V3.RenderSystem.camera);
-
-			// var yawObject = new THREE.Object3D();
-			// yawObject.position.y = 0;
-			// yawObject.position.x = 0;
-			// yawObject.position.z = 0;
-			// yawObject.add( pitchObject );
-			// m.add(yawObject);
-			// V3.RenderSystem.scene.add(yawObject);
-
-			var PI_2 = Math.PI / 2;
-
-    	var moveCallback = function(e){
-    // 		var movementX = event.movementX || 0;
-				// var movementY = event.movementY || 0;
-				// if (Math.abs(movementX)<100 && Math.abs(movementY) < 100){
-				// 	yawObject.rotation.y -= movementX * 0.003;
-				// 	pitchObject.rotation.x -= movementY * 0.003;
-
-				// 	pitchObject.rotation.x = Math.max( - PI_2, Math.min( PI_2, pitchObject.rotation.x ) );
-				// };
-    	};
     	document.onclick = function(){
     		if (!this.pointerLockEnabled){
 					element.requestPointerLock();
@@ -189,37 +143,10 @@ V3.InputSystem = {
 
     // keyboard
 		document.onkeydown = function(e){
-			// console.log(e.which);
-			switch (e.which){
-				case 83:
-					self.actions.backward = true;
-					break;
-				case 87:
-					self.actions.forward = true;
-					break;
-				case 65:
-					self.actions.left = true;
-					break;
-				case 68:
-					self.actions.right = true;
-					break;
-			}
+			self.actions[String.fromCharCode(e.which)] = true;
 		}
 		document.onkeyup = function(e){
-			switch (e.which){
-				case 83:
-					self.actions.backward = false;
-					break;
-				case 87:
-					self.actions.forward = null;
-					break;
-				case 65:
-					self.actions.left = null;
-					break;
-				case 68:
-					self.actions.right = false;
-					break;
-			}
+			self.actions[String.fromCharCode(e.which)] = false;
 		}
 		return true;
 	}
@@ -339,16 +266,15 @@ V3.InputComponent = class{
 	constructor(){
 		this.entity = null;
 		this.system = 'input';
-		this.movingSpeed = 10;
+		this.movingSpeed = 1;
 		this.mouseSpeed = 0.003;
 		this.wheelSpeed = 0.7;
-		this.axisMappings = {
-			mouseX:{},
-			mouseY:{},
-		}
-		this.actionMappings = {
-			wheelUp:{},
-			wheelDown:{}
+		this.keyMappings = {
+			W: 'moveForward',
+			S: 'moveBackward',
+			A: 'moveLeft',
+			D: 'moveRight',
+			Space: 'jump'
 		}
 	}
 	register(){
@@ -733,6 +659,7 @@ V3.BasicPlayerController = class{
 		this.mesh = this.entity.components.render.mesh;
 		this.camera = this.entity.components.camera.object;
 		this.mouseSpeed = this.entity.components.input.mouseSpeed;
+		this.movingSpeed = this.entity.components.input.movingSpeed;
 		this.wheelSpeed = this.entity.components.input.wheelSpeed;
 	}
 };
@@ -757,6 +684,21 @@ V3.FPSPlayerController = class extends V3.BasicPlayerController{
 		this.mesh.rotation.y -= movement*this.mouseSpeed;
 	}
 	mouseWheel(movement){}
+
+	moveForward(){
+		this.mesh.translateZ(-this.movingSpeed);
+	}
+
+	moveBackward(){
+		this.mesh.translateZ(this.movingSpeed);
+	}
+
+	moveLeft(){
+		this.mesh.translateX(-this.movingSpeed);
+	}
+	moveRight(){
+		this.mesh.translateX(this.movingSpeed);
+	}
 };
 
 // Source: src/playerControllers/rpg.js

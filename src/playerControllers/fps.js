@@ -17,4 +17,19 @@ V3.FPSPlayerController = class extends V3.BasicPlayerController{
 		this.mesh.rotation.y -= movement*this.mouseSpeed;
 	}
 	mouseWheel(movement){}
+
+	moveForward(){
+		this.mesh.translateZ(-this.movingSpeed);
+	}
+
+	moveBackward(){
+		this.mesh.translateZ(this.movingSpeed);
+	}
+
+	moveLeft(){
+		this.mesh.translateX(-this.movingSpeed);
+	}
+	moveRight(){
+		this.mesh.translateX(this.movingSpeed);
+	}
 };
