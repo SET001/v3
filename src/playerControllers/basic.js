@@ -6,5 +6,6 @@ V3.BasicPlayerController = class{
 		this.mouseSpeed = this.entity.components.input.mouseSpeed;
 		this.movingSpeed = this.entity.components.input.movingSpeed;
 		this.wheelSpeed = this.entity.components.input.wheelSpeed;
+		this.runingSpeed = this.entity.components.input.runingSpeed;
 	}
 };

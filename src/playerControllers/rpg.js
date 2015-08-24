@@ -22,4 +22,19 @@ V3.RPGPlayerController = class extends V3.BasicPlayerController{
 	mouseWheel(movement){
 		this.camera.translateZ(-movement/120*this.wheelSpeed);
 	}
+
+	moveForward(){
+		this.mesh.translateZ(-this.movingSpeed);
+	}
+
+	moveBackward(){
+		this.mesh.translateZ(this.movingSpeed);
+	}
+
+	moveLeft(){
+		this.mesh.translateX(-this.movingSpeed);
+	}
+	moveRight(){
+		this.mesh.translateX(this.movingSpeed);
+	}
 };

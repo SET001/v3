@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>V3 example application</title>
+	<link href='css/style.css' rel='stylesheet'/>
+</head>
+<body>
+
+	<div class="menu">
+		<h3>Games</h3>
+		<ul>
+			<li><a href="#fps">First Person Shooter (FPS)</a></li>
+			<li><a href="#rpg">RPG</a></li>
+		</ul>
+	</div>
+
+	<div class="content">
+		<iframe src="" frameborder="0" id="game">
+
+		</iframe>
+	</div>
+
+
+</body>
+	<script src="//code.jquery.com/jquery-1.11.3.min.js"></script>
+	<script>
+		function setExample(){
+			return $('#game').attr('src', window.location.hash.substr(1));
+		}
+		$(window).on('hashchange', function(e) {
+		  setExample();
+		});
+		$(function(){
+			setExample();
+		});
+	</script>
+</html>

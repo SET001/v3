@@ -4,13 +4,20 @@ V3.InputSystem = {
 	components: [],
 	controllers: [],
 	actions: {},
+	keyMapping: {
+		32: 'Space',
+		16: 'Shift',
+		17: 'Ctrl',
+		18: 'Alt'
+	},
 	controller: function(){
 		var self = this;
 		this.controllers.map(function(controller){
 			for(let action in self.actions){
 				if (self.actions[action]){
 					var foo = controller.entity.components.input.keyMappings[action];
-					if (controller[foo]) controller[foo]();
+					console.log(action, foo);
+					if (controller[foo]) controller[foo](self.actions);
 				}
 			}
 		});
@@ -34,14 +41,13 @@ V3.InputSystem = {
 			}
 		});
 	},
+
 	mouseWheel: function(e){
 		this.controllers.map(function(controller){
 			controller.mouseWheel(e.wheelDelta)
 		});
 	},
-	keyboardEvent: function(){
 
-	},
 	init: function(){
 		var self = this;
 		var mouse = new THREE.Vector2();
@@ -72,10 +78,21 @@ V3.InputSystem = {
 
     // keyboard
 		document.onkeydown = function(e){
-			self.actions[String.fromCharCode(e.which)] = true;
+			var action = null;
+			if (e.which in self.keyMapping)
+				action = self.keyMapping[e.which]
+			else
+				action = String.fromCharCode(e.which);
+			self.actions[action] = true;
 		}
 		document.onkeyup = function(e){
-			self.actions[String.fromCharCode(e.which)] = false;
+			var action = null;
+			if (e.which in self.keyMapping)
+				action = self.keyMapping[e.which]
+			else
+				action = String.fromCharCode(e.which);
+			if (action)
+				self.actions[action] = false;
 		}
 		return true;
 	}

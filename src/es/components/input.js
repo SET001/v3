@@ -4,6 +4,7 @@ V3.InputComponent = class{
 		this.entity = null;
 		this.system = 'input';
 		this.movingSpeed = 1;
+		this.runingSpeed = 3;
 		this.mouseSpeed = 0.003;
 		this.wheelSpeed = 0.7;
 		this.keyMappings = {

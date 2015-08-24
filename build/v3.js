@@ -66,7 +66,20 @@ V3.Scene = function(){
 
 // Source: src/es/systems/collision.js
 V3.CollisionSystem = {
-	name: 'Collision'
+	name: 'Collision',
+	requestTranslation: function(object, translation){
+		var tryObject = object.clone();
+		translation(tryObject);
+		var startPoint = object.position.clone();
+		var endPoint = tryObject.position.clone();
+		var direction = endPoint.clone().sub(startPoint).normalize();
+		var distance = startPoint.distanceTo(endPoint);
+		var ray = new THREE.Raycaster(startPoint, direction, 0, distance+2);
+		var collisions = ray.intersectObjects(V3.RenderSystem.scene.children, true);
+		if (!collisions.length){
+			translation(object);
+		}
+	}
 }
 
 // Source: src/es/systems/input.js
@@ -75,13 +88,20 @@ V3.InputSystem = {
 	components: [],
 	controllers: [],
 	actions: {},
+	keyMapping: {
+		32: 'Space',
+		16: 'Shift',
+		17: 'Ctrl',
+		18: 'Alt'
+	},
 	controller: function(){
 		var self = this;
 		this.controllers.map(function(controller){
 			for(let action in self.actions){
 				if (self.actions[action]){
 					var foo = controller.entity.components.input.keyMappings[action];
-					if (controller[foo]) controller[foo]();
+					console.log(action, foo);
+					if (controller[foo]) controller[foo](self.actions);
 				}
 			}
 		});
@@ -105,14 +125,13 @@ V3.InputSystem = {
 			}
 		});
 	},
+
 	mouseWheel: function(e){
 		this.controllers.map(function(controller){
 			controller.mouseWheel(e.wheelDelta)
 		});
 	},
-	keyboardEvent: function(){
 
-	},
 	init: function(){
 		var self = this;
 		var mouse = new THREE.Vector2();
@@ -143,10 +162,21 @@ V3.InputSystem = {
 
     // keyboard
 		document.onkeydown = function(e){
-			self.actions[String.fromCharCode(e.which)] = true;
+			var action = null;
+			if (e.which in self.keyMapping)
+				action = self.keyMapping[e.which]
+			else
+				action = String.fromCharCode(e.which);
+			self.actions[action] = true;
 		}
 		document.onkeyup = function(e){
-			self.actions[String.fromCharCode(e.which)] = false;
+			var action = null;
+			if (e.which in self.keyMapping)
+				action = self.keyMapping[e.which]
+			else
+				action = String.fromCharCode(e.which);
+			if (action)
+				self.actions[action] = false;
 		}
 		return true;
 	}
@@ -267,6 +297,7 @@ V3.InputComponent = class{
 		this.entity = null;
 		this.system = 'input';
 		this.movingSpeed = 1;
+		this.runingSpeed = 3;
 		this.mouseSpeed = 0.003;
 		this.wheelSpeed = 0.7;
 		this.keyMappings = {
@@ -661,6 +692,7 @@ V3.BasicPlayerController = class{
 		this.mouseSpeed = this.entity.components.input.mouseSpeed;
 		this.movingSpeed = this.entity.components.input.movingSpeed;
 		this.wheelSpeed = this.entity.components.input.wheelSpeed;
+		this.runingSpeed = this.entity.components.input.runingSpeed;
 	}
 };
 
@@ -672,32 +704,55 @@ V3.FPSPlayerController = class extends V3.BasicPlayerController{
 	}
 
 	mouseUp(movement){
-		this.camera.rotation.x -= movement*this.mouseSpeed;
+		if (THREE.Math.radToDeg(this.camera.rotation.x)<90)
+			this.camera.rotation.x -= movement*this.mouseSpeed;
 	}
+
 	mouseDown(movement){
-		this.camera.rotation.x -= movement*this.mouseSpeed;
+		if (THREE.Math.radToDeg(this.camera.rotation.x)>-90)
+			this.camera.rotation.x -= movement*this.mouseSpeed;
 	}
+
 	mouseLeft(movement){
 		this.mesh.rotation.y -= movement*this.mouseSpeed;
 	}
+
 	mouseRight(movement){
 		this.mesh.rotation.y -= movement*this.mouseSpeed;
 	}
+
 	mouseWheel(movement){}
 
-	moveForward(){
-		this.mesh.translateZ(-this.movingSpeed);
+	moveForward(actions){
+		var speed = actions.Shift ? this.runingSpeed : this.movingSpeed;
+		V3.CollisionSystem.requestTranslation(this.mesh, function(object){
+			object.translateZ(-speed);
+		}.bind(this));
 	}
 
-	moveBackward(){
-		this.mesh.translateZ(this.movingSpeed);
+	moveBackward(actions){
+		var speed = actions.Shift ? this.runingSpeed : this.movingSpeed;
+		V3.CollisionSystem.requestTranslation(this.mesh, function(object){
+			object.translateZ(speed);
+		}.bind(this));
 	}
 
-	moveLeft(){
-		this.mesh.translateX(-this.movingSpeed);
+	moveLeft(actions){
+		var speed = actions.Shift ? this.runingSpeed : this.movingSpeed;
+		V3.CollisionSystem.requestTranslation(this.mesh, function(object){
+			object.translateX(-speed);
+		}.bind(this));
 	}
-	moveRight(){
-		this.mesh.translateX(this.movingSpeed);
+
+	moveRight(actions){
+		var speed = actions.Shift ? this.runingSpeed : this.movingSpeed;
+		V3.CollisionSystem.requestTranslation(this.mesh, function(object){
+			object.translateX(speed);
+		}.bind(this));
+	}
+
+	jump(){
+		console.log("jumping");
 	}
 };
 
@@ -725,6 +780,21 @@ V3.RPGPlayerController = class extends V3.BasicPlayerController{
 	}
 	mouseWheel(movement){
 		this.camera.translateZ(-movement/120*this.wheelSpeed);
+	}
+
+	moveForward(){
+		this.mesh.translateZ(-this.movingSpeed);
+	}
+
+	moveBackward(){
+		this.mesh.translateZ(this.movingSpeed);
+	}
+
+	moveLeft(){
+		this.mesh.translateX(-this.movingSpeed);
+	}
+	moveRight(){
+		this.mesh.translateX(this.movingSpeed);
 	}
 };
 
