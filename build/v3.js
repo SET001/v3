@@ -100,7 +100,6 @@ V3.InputSystem = {
 			for(let action in self.actions){
 				if (self.actions[action]){
 					var foo = controller.entity.components.input.keyMappings[action];
-					console.log(action, foo);
 					if (controller[foo]) controller[foo](self.actions);
 				}
 			}

@@ -1,30 +1,53 @@
 "use strict";
 class Room extends V3.StaticMesh{
   setUpRenderComponent(){
-    var texture = V3.TexturesManager.get("bricks");
-    var material = new THREE.MeshLambertMaterial({
-      // map: texture,
-      collor: 0xcccccc,
-      side: THREE.DoubleSide
-    });
-    var geometry = new THREE.BoxGeometry(2000, 100, 2000);
+    var self = this;
+
+    var floorTexture = V3.TexturesManager.get("floor");
+    floorTexture.wrapS = floorTexture.wrapT = THREE.RepeatWrapping;
+    floorTexture.repeat.x = 1;
+    floorTexture.repeat.y = 1;
+
+    var wallTexture = V3.TexturesManager.get("wall");
+    wallTexture.wrapS = wallTexture.wrapT = THREE.RepeatWrapping;
+    wallTexture.repeat.x = wallTexture.repeat.x = 1;
+
+    var floorMaterial = new THREE.MeshLambertMaterial({map: floorTexture,side: THREE.DoubleSide});
+    var wallMaterial = new THREE.MeshLambertMaterial({map: wallTexture,side: THREE.DoubleSide})
+    var materials = [
+      wallMaterial,
+      wallMaterial,
+      wallMaterial,
+      floorMaterial,
+      wallMaterial,
+      wallMaterial
+    ];
+    var geometry = new THREE.BoxGeometry(2000, 400, 2000);
     geometry.center();
     geometry.applyMatrix(new THREE.Matrix4().makeTranslation(0, -geometry.boundingBox.min.y, 0));
-    this.mesh = new THREE.Mesh(geometry, material);
+
+    function setUv( v, index, wr, hr ) {
+      for (var i=index*2; i<(index+1)*2; i++) {
+        for (var j=0; j<3; j++) {
+          v[i][j].x = v[i][j].x * wr;
+          v[i][j].y = v[i][j].y * hr;
+        }
+      }
+    }
+    var v = geometry.faceVertexUvs[0];
+    var w = 5;
+    var h = 2;
+    setUv(v, 0, w, h);
+    setUv(v, 1, w, h);
+    setUv(v, 2, w, h);
+    setUv(v, 3, 80, 80);
+    setUv(v, 4, w, h);
+    setUv(v, 5, w, h);
+
+    this.mesh = new THREE.Mesh(geometry, new THREE.MeshFaceMaterial(materials));
     this.mesh.name = "Room";
     this.mesh.castShadow = true;
     this.mesh.receiveShadow = true;
-    for (var i=0; i<100; i++){
-      var width = Math.random()*200+10;
-      var length = Math.random()*200+10;
-      var fooG = new THREE.BoxGeometry(width, 100, length);
-      fooG.center();
-      fooG.applyMatrix(new THREE.Matrix4().makeTranslation(0, -fooG.boundingBox.min.y, 0));
-      var foo = new THREE.Mesh(fooG, material);
-      foo.position.x = Math.random()*2000-1000;
-      foo.position.z = Math.random()*2000-1000;
-      this.mesh.add(foo);
-    };
     return {mesh: this.mesh};
   }
 }

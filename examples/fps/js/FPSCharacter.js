@@ -6,21 +6,16 @@ class FPSCharacter extends V3.Pawn{
     var bodyG = new THREE.BoxGeometry(1, 4, 1);
     var headG = new THREE.BoxGeometry(2, 2, 2);
 
-    // var geometry = new THREE.BoxGeometry(2, 2, 2);
     bodyG.center();
     bodyG.applyMatrix(new THREE.Matrix4().makeTranslation(0, -bodyG.boundingBox.min.y, 0));
     var head = new THREE.Mesh(headG, material);
     head.name = "FPSCharacter.head";
     head.position.set(0, 5, 0);
-    head.castShadow = true;
-    head.receiveShadow = true;
 
     this.mesh = new THREE.Mesh(bodyG, material);
     // this.mesh.position.set(0, 40, 0);
     this.mesh.name = "FPSCharacter";
     // this.mesh.castShadow = true;
-    // this.mesh.receiveShadow = true;
-
     this.mesh.add(head);
 
     var light = new THREE.DirectionalLight(0xffffff, 0.4);
@@ -34,13 +29,17 @@ class FPSCharacter extends V3.Pawn{
     lightTarget.position.set(0, 5, -10);
     this.mesh.add(lightTarget);
     light.target = lightTarget;
-    light.position.set(0, 20, 30);
+    light.position.set(0, 40, 30);
     this.mesh.add(light);
-    // this.mesh.material.map = THREE.ImageUtils.loadTexture('images/bricks.jpg');
     return {mesh: this.mesh};
   }
+
   setUpCameraComponent(component){
     this.mesh.add(component.object);
-    component.object.position.set(0, 10, 0);
+    component.object.position.set(0, 30, 0);
+  }
+
+  setUpInputComponent(component){
+    component.movingSpeed = 3;
   }
 }

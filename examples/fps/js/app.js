@@ -17,8 +17,9 @@ window.onload = function() {
 	addStats();
   V3.init();
   V3.TexturesManager.load({
-    bricks: "../_images/bricks.jpg",
-    floor: "../_images/floor.jpg",
+    blocks: "../_images/odl1or4.png",
+    wall: "../_images/stone_3_2048x2048.jpg",
+    floor: "../_images/floor4.jpg",
   });
   // V3.config.showAxis = true;
   V3.config.renderer.shadowMapEnabled = true;
