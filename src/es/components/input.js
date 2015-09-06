@@ -1,8 +1,8 @@
 "use strict";
-V3.InputComponent = class{
+V3.InputComponent = class extends V3.Component{
 	constructor(){
-		this.entity = null;
-		this.system = 'input';
+		super();
+		this.type = 'input';
 		this.movingSpeed = 1;
 		this.runingSpeed = 3;
 		this.mouseSpeed = 0.003;
@@ -12,10 +12,8 @@ V3.InputComponent = class{
 			S: 'moveBackward',
 			A: 'moveLeft',
 			D: 'moveRight',
-			Space: 'jump'
+			Space: 'jump',
+			Click: 'shoot',
 		}
-	}
-	register(){
-		V3.InputSystem.components.push(this);
 	}
 };

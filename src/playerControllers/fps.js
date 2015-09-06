@@ -55,4 +55,10 @@ V3.FPSPlayerController = class extends V3.BasicPlayerController{
 	jump(){
 		console.log("jumping");
 	}
+	shoot(){
+		var bullet = new Bullet(this.entity.components.camera.object.clone());
+		bullet.register();
+		// console.log(bullet.entity.components.position);
+		// console.log(V3.RenderSystem.scene.children.length);
+	}
 };

@@ -61,8 +61,16 @@ V3.InputSystem = {
     	document.onclick = function(){
     		if (!this.pointerLockEnabled){
 					element.requestPointerLock();
+    		}else{
+
     		}
     	};
+    	document.onmousedown = function(){
+    		self.actions.Click = true;
+    	}
+    	document.onmouseup = function(){
+    		self.actions.Click = false;
+    	}
 			document.addEventListener('mousewheel', self.mouseWheel.bind(self));
     	document.addEventListener('pointerlockchange', function(){
     		self.pointerLockEnabled = (document.pointerLockElement == element);

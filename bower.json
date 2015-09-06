@@ -15,5 +15,8 @@
   "devDependencies": {
     "lodash": "~3.10.0",
     "threejs": "*"
+  },
+  "dependencies": {
+    "bootstrap": "~3.3.5"
   }
 }

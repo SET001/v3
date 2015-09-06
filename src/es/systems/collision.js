@@ -1,5 +1,18 @@
 V3.CollisionSystem = {
 	name: 'Collision',
+	components: [],
+	componentTypes: [],
+	init: function(){
+		document.addEventListener("component_new", this.onNewComponent.bind(this));
+	},
+	onNewComponent: function(component){
+		if (component.type in this.componentTypes){
+			this.components.push(component);
+		}
+	},
+	controller: function(){
+
+	},
 	requestTranslation: function(object, translation){
 		var tryObject = object.clone();
 		translation(tryObject);

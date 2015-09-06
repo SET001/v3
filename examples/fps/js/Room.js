@@ -40,7 +40,7 @@ class Room extends V3.StaticMesh{
     setUv(v, 0, w, h);
     setUv(v, 1, w, h);
     setUv(v, 2, w, h);
-    setUv(v, 3, 80, 80);
+    setUv(v, 3, 40, 40);
     setUv(v, 4, w, h);
     setUv(v, 5, w, h);
 

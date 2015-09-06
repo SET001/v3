@@ -1,7 +1,7 @@
 "use strict";
 V3.RenderSystem = {
 
-	name: 'Render',
+	componentTypes: ['render'],
 	camera: null,
 	renderer: null,
 	scene: null,

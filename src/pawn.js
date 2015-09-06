@@ -16,12 +16,6 @@ V3.Pawn = class extends V3.GameObject{
 	}
 	init(){}
 
-	set position(vector3){
-		this.mesh.position = vector3;
-	}
-	get position(){
-		return this.mesh.position;
-	}
 	onClick(){
 
 	}

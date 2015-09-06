@@ -1,7 +1,7 @@
 "use strict";
 var V3 = {
+	_componentIndex: 0,
 	revision: 1,
-	renderer: null,
 	container: null,
 	config: {
 		path: "",
@@ -27,18 +27,8 @@ var V3 = {
 			});
 		});
 	},
-
-	setSize: function(){
-		this.renderer.setSize(this.container.offsetWidth, this.container.offsetHeight);
-		this.camera.aspect = this.container.offsetWidth / this.container.offsetHeight;
-		this.camera.updateProjectionMatrix();
-	},
-
-	render: function(){
-		// this.sceneHelpers.updateMatrixWorld();
-		// this.scene.updateMatrixWorld();
-		this.renderer.render(this.scene, this.camera);
-		this.renderer.render(this.sceneHelpers, this.camera);
+	trigger: function(eventName, param){
+		document.dispatchEvent(new CustomEvent(eventName, {detail: param}));
 	},
 	TexturesManager: {
 		textures: {},
