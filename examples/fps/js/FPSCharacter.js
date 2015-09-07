@@ -1,6 +1,7 @@
 "use strict";
-class FPSCharacter extends V3.Pawn{
-  setUpRenderComponent(){
+class FPSCharacter extends V3.PlayerCharacter{
+
+  setUpRenderComponent(component){
     var material = new THREE.MeshLambertMaterial({color: 0x00ff00});
 
     var bodyG = new THREE.BoxGeometry(1, 4, 1);
@@ -31,7 +32,7 @@ class FPSCharacter extends V3.Pawn{
     light.target = lightTarget;
     light.position.set(0, 40, 30);
     this.mesh.add(light);
-    return {mesh: this.mesh};
+    component.object = this.mesh;
   }
 
   setUpCameraComponent(component){
@@ -41,5 +42,6 @@ class FPSCharacter extends V3.Pawn{
 
   setUpInputComponent(component){
     component.movingSpeed = 3;
+    component.controllerClass = V3.FPSPlayerController;
   }
 }

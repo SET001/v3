@@ -35,7 +35,7 @@ describe('Entity System', function(){
 			var foo = new Foo();
 			expect(foo.renderComponent.mesh).toEqual({foo:'bar'});
 		});
-		it('should remove components by type', function(){
+		it('should remove components', function(){
 			var foo = new V3.GameObject([V3.RenderComponent]);
 			foo.addComponent(V3.InputComponent);
 			foo.removeComponent('render');
@@ -47,7 +47,29 @@ describe('Entity System', function(){
 	});
 
 	describe('Systems', function(){
-		it('should remove components', function(){});
-		it('should add components', function(){});
+		var testSystem = null;
+		var foo = null;
+		beforeAll(function(){
+			testSystem = V3.ESManager.addSystem(V3.System, {name: 'testSystem'});
+			testSystem.componentTypes.push('render');
+			foo = new V3.GameObject([V3.RenderComponent]);
+		});
+		it('ESManager should create systems', function(){
+			expect(typeof V3.ESManager.systems.testSystem).toBe('object');
+		});
+		it('ESManager should throw error while adding system without name', function(){
+			expect(function(){
+				V3.ESManager.addSystem(V3.System);
+			}).toThrow();
+		});
+		it('should add components', function(){
+			expect(testSystem.components.length).toBe(1);
+			var foo2 = new V3.GameObject([V3.RenderComponent]);
+			expect(testSystem.components.length).toBe(2);
+		});
+		it('should remove components', function(){
+			foo.removeComponent('render');
+			expect(testSystem.components.length).toBe(1);
+		});
 	});
 });

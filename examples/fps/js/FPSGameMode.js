@@ -7,17 +7,17 @@ class FPSGameMode extends V3.GameMode{
 	}
 	init(){
 		super.init();
-		(new GlobalLight()).register();
-		(new Room()).register();
+		new GlobalLight();
+		new Room();
 		var spawningStartPoint = new THREE.Vector3(-1000, 0, -1000);
 		var spawningEndPoint = new THREE.Vector3(1000, 0, 1000);
-		var spawner = new V3.Spawner(FPSBot);
-		var bots = spawner.spawn(5, spawningStartPoint, spawningEndPoint);
-		var redBotsSpawner = new V3.Spawner(FPSBotDevil);
-		var redBots = redBotsSpawner.spawn(5, spawningStartPoint, spawningEndPoint);
+		// var spawner = new V3.Spawner(FPSBot);
+		// var bots = spawner.spawn(5, spawningStartPoint, spawningEndPoint);
+		// var redBotsSpawner = new V3.Spawner(FPSBotDevil);
+		// var redBots = redBotsSpawner.spawn(5, spawningStartPoint, spawningEndPoint);
 
 
-		var skeletonSpawner = new V3.Spawner(FSPBotSkeleton);
-		skeletonSpawner.spawn(5, spawningStartPoint, spawningEndPoint);
+		// var skeletonSpawner = new V3.Spawner(FSPBotSkeleton);
+		// skeletonSpawner.spawn(5, spawningStartPoint, spawningEndPoint);
 	}
 }

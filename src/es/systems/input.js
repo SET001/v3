@@ -1,53 +1,19 @@
 "use strict";
-V3.InputSystem = {
-	name: 'Input',
-	components: [],
-	controllers: [],
-	actions: {},
-	keyMapping: {
-		32: 'Space',
-		16: 'Shift',
-		17: 'Ctrl',
-		18: 'Alt'
-	},
-	controller: function(){
-		var self = this;
-		this.controllers.map(function(controller){
-			for(let action in self.actions){
-				if (self.actions[action]){
-					var foo = controller.entity.components.input.keyMappings[action];
-					if (controller[foo]) controller[foo](self.actions);
-				}
-			}
-		});
-	},
-	onNewEntity: function(e){
-		if ('input' in e.detail.components){
-			this.controllers.push(new this.controllerClass(e.detail));
-		}
-	},
-	mouseMove: function(e){
-		this.controllers.map(function(controller){
-			if (Math.abs(e.movementX)<100 && Math.abs(e.movementY) < 100){
-				if (e.movementX>0)
-			 		controller.mouseRight(e.movementX);
-			 	if (e.movementX<0)
-			 		controller.mouseLeft(e.movementX);
-			 	if (e.movementY<0)
-			 		controller.mouseUp(e.movementY);
-			 	if (e.movementY>0)
-			 		controller.mouseDown(e.movementY);
-			}
-		});
-	},
+V3.InputSystem = class extends V3.System{
+	constructor(){
+		super();
+		this.name =  'input';
+		this.components = [];
+		this.controllers = [];
+		this.componentTypes = ['input'];
+		this.actions = {};
+		this.keyMapping = {
+			32: 'Space',
+			16: 'Shift',
+			17: 'Ctrl',
+			18: 'Alt'
+		};
 
-	mouseWheel: function(e){
-		this.controllers.map(function(controller){
-			controller.mouseWheel(e.wheelDelta)
-		});
-	},
-
-	init: function(){
 		var self = this;
 		var mouse = new THREE.Vector2();
 		this.pointerLockEnabled = false;
@@ -80,7 +46,6 @@ V3.InputSystem = {
 					document.removeEventListener("mousemove", mouseCallback, false);
 				};
 			}, false);
-			document.addEventListener("entity_new", self.onNewEntity.bind(self));
     }
 
     // keyboard
@@ -101,6 +66,50 @@ V3.InputSystem = {
 			if (action)
 				self.actions[action] = false;
 		}
-		return true;
+	}
+
+	controller(){
+		var self = this;
+		this.controllers.map(function(controller){
+			for(let action in self.actions){
+				if (self.actions[action]){
+					var foo = controller.entity.inputComponent.keyMappings[action];
+					if (controller[foo]) controller[foo](self.actions);
+				}
+			}
+		});
+	}
+
+	onComponentNew(component){
+		if (this.componentTypes.indexOf(component.type)>-1){
+			this.controllers.push(new component.controllerClass(component.entity));
+		}
+	}
+
+	// onNewEntity(e){
+	// 	if ('input' in e.detail.components){
+	// 		this.controllers.push(new this.controllerClass(e.detail));
+	// 	}
+	// }
+
+	mouseMove(e){
+		this.controllers.map(function(controller){
+			if (Math.abs(e.movementX)<100 && Math.abs(e.movementY) < 100){
+				if (e.movementX>0)
+			 		controller.mouseRight(e.movementX);
+			 	if (e.movementX<0)
+			 		controller.mouseLeft(e.movementX);
+			 	if (e.movementY<0)
+			 		controller.mouseUp(e.movementY);
+			 	if (e.movementY>0)
+			 		controller.mouseDown(e.movementY);
+			}
+		});
+	}
+
+	mouseWheel(e){
+		this.controllers.map(function(controller){
+			controller.mouseWheel(e.wheelDelta)
+		});
 	}
 };

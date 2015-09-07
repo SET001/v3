@@ -1,12 +1,16 @@
 "use strict";
+
+// Basic object for all things in game - entity in terms of CES
+
 V3.GameObject = class{
 	constructor(componentClasses){
-		this.id = Math.ceil(Math.random()*999999);
+		this.id = V3._entityIndex++;
 		var self = this;
 		if (componentClasses && componentClasses.length){
 			componentClasses.map(this.addComponent, this);
 		}
 	}
+
 	addComponent(componentClass){
 		var component = new componentClass();
 		if (typeof this[`${component.type}Component`] === 'undefined'){
@@ -22,11 +26,9 @@ V3.GameObject = class{
 			throw `Entity alriedy have ${component.type} component!`;
 		}
 	}
+
 	removeComponent(type){
 		V3.trigger('component_remove', this[`${type}Component`]);
 		delete this[`${type}Component`];
-	}
-	removeComponentByType(type){
-
 	}
 };

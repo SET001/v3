@@ -1,18 +1,21 @@
 "use strict";
-V3.CameraComponent = class{
-	constructor(type){
-		this.system = 'camera';
-		if (!type) type = 'perspective';
+V3.CameraComponent = class extends V3.Component{
+	constructor(cameraType){
+		super();
+		this.type = 'camera';
+		if (!cameraType) cameraType = 'perspective';
 		var fow = 50;
 		var near = 1;
 		var far = 20000;
-		var aspect = V3.RenderSystem.renderer.domElement.width / V3.RenderSystem.renderer.domElement.height;
-		var left = V3.RenderSystem.renderer.domElement.width / -2;
-		var right = V3.RenderSystem.renderer.domElement.width / 2;
-		var top = V3.RenderSystem.renderer.domElement.height / 2;
-		var bottom = V3.RenderSystem.renderer.domElement.height / -2;
+		var renderSystem = V3.ESManager.getSystem('render');
+
+		var aspect = renderSystem.renderer.domElement.width / renderSystem.renderer.domElement.height;
+		var left = renderSystem.renderer.domElement.width / -2;
+		var right = renderSystem.renderer.domElement.width / 2;
+		var top = renderSystem.renderer.domElement.height / 2;
+		var bottom = renderSystem.renderer.domElement.height / -2;
 		var cubeResolution = 128;
-		switch (type.toLowerCase()){
+		switch (cameraType.toLowerCase()){
 			case 'perspective':
 				this.object = new THREE.PerspectiveCamera(fow, aspect, near, far);
 				break;

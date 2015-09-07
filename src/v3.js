@@ -1,7 +1,8 @@
 "use strict";
 var V3 = {
 	_componentIndex: 0,
-	revision: 1,
+	_systemIndex: 0,
+	_entityIndex: 0,
 	container: null,
 	config: {
 		path: "",

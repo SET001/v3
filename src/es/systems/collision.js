@@ -1,19 +1,24 @@
-V3.CollisionSystem = {
-	name: 'Collision',
-	components: [],
-	componentTypes: [],
-	init: function(){
+"use strict";
+V3.CollisionSystem = class extends V3.System{
+	constructor(){
+		super();
+		this.name = 'collision';
+		this.components = [];
+		this.componentTypes = [];
+
+	}
+	init(){
 		document.addEventListener("component_new", this.onNewComponent.bind(this));
-	},
-	onNewComponent: function(component){
+	}
+	onNewComponent(component){
 		if (component.type in this.componentTypes){
 			this.components.push(component);
 		}
-	},
-	controller: function(){
+	}
+	controller(){
 
-	},
-	requestTranslation: function(object, translation){
+	}
+	requestTranslation(object, translation){
 		var tryObject = object.clone();
 		translation(tryObject);
 		var startPoint = object.position.clone();
@@ -21,9 +26,9 @@ V3.CollisionSystem = {
 		var direction = endPoint.clone().sub(startPoint).normalize();
 		var distance = startPoint.distanceTo(endPoint);
 		var ray = new THREE.Raycaster(startPoint, direction, 0, distance+2);
-		var collisions = ray.intersectObjects(V3.RenderSystem.scene.children, true);
+		var collisions = ray.intersectObjects(V3.ESManager.getSystem('render').scene.children, true);
 		if (!collisions.length){
 			translation(object);
 		}
 	}
-}
+};

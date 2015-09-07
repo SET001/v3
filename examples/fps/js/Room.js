@@ -1,6 +1,10 @@
 "use strict";
-class Room extends V3.StaticMesh{
-  setUpRenderComponent(){
+class Room extends V3.GameObject{
+  constructor(){
+    super([V3.RenderComponent]);
+  }
+
+  setUpRenderComponent(component){
     var self = this;
 
     var floorTexture = V3.TexturesManager.get("floor");
@@ -48,6 +52,6 @@ class Room extends V3.StaticMesh{
     this.mesh.name = "Room";
     this.mesh.castShadow = true;
     this.mesh.receiveShadow = true;
-    return {mesh: this.mesh};
+    component.object = this.mesh;
   }
 }

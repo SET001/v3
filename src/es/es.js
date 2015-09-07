@@ -1,58 +1,61 @@
 "use strict";
 
 // The Entity System
-V3.ESSystem = class{
+V3.System = class{
 	constructor(){
+		this.id = V3._systemIndex++;
 		this.components = [];
 		this.componentTypes = [];
-		document.addEventListener("component_new", this.onComponentNew.bind(this));
-		document.addEventListener("component_remove", this.onComponentRemove.bind(this));
+		var self = this;
+		document.addEventListener("component_new", function(e){
+			self.onComponentNew.call(self, e.detail);
+		});
+		document.addEventListener("component_remove", function(e){
+			self.onComponentRemove.call(self, e.detail);
+		});
 	}
 	onComponentNew(component){
-		if (component.type in this.componentTypes){
+		if (this.componentTypes.indexOf(component.type)>-1){
 			this.components.push(component);
 		}
 	}
 	onComponentRemove(component){
-		this.components = this.components.filter(function(component){
-			c.id == component.id;
+		this.components = this.components.filter(function(c){
+			return c.id == component.id;
 		});
 	}
 };
+
 V3.ESManager = {
-	entities: {},
-	systems: [],
-	addEntity: function(entity){
-		this.entities[entity.id] = entity;
-		var mesh = entity.components.render.mesh;			//	???
-		if ('render' in entity.components && mesh){
-			mesh.uid = entity.id;
-			if (entity.components.position) mesh.position.set(
-				entity.components.position.x,
-				entity.components.position.y,
-				entity.components.position.z);
-			V3.RenderSystem.scene.add(mesh);
+	systems: {},
+	getSystem: function(sytemName){
+		return this.systems[sytemName];
+	},
+	addSystem: function(systemClass, params){
+		var system = new systemClass();
+		if (params && typeof params === 'object'){
+			for (let param in params){
+				system[param] = params[param];
+			}
 		}
 
-		document.dispatchEvent(new CustomEvent("entity_new", {detail: entity}));
+		if (!system.name)
+			throw 'Can`t add system without name!';
+
+		if (typeof this.systems[system.name] !== 'undefined')
+			throw `System ${system.name} alriedy exist!`;
+
+		this.systems[system.name] = system;
+		return system;
 	},
-	addSystem: function(system){
-		if (system.init && !system.init())
-			throw `Unable to initialize ${system.name} system!`;
-		this.systems.push(system);
-	},
-	removeEntity: function(){},
 	removeSystem: function(){},
 	run: function(delta){
 		var self = this;
-		this.systems.map(function(system){
+		for (let systemName in this.systems){
+			var system = this.systems[systemName];
 			if (system.controller)
-				system.controller(self.entities, delta);
-		})
-		// V3.RenderSystem.light.position.x = Math.sin(delta/800)*4;
-		// V3.RenderSystem.light.position.z = Math.cos(delta/800)*4;
-		// V3.RenderSystem.light.position.y += 0.1
-		// V3.RenderSystem.light.position.z += 0.1
+				system.controller(delta);
+		}
 		window.requestAnimationFrame(this.run.bind(this));
 	},
 }

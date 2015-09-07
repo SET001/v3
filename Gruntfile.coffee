@@ -14,14 +14,14 @@ module.exports = (grunt) ->
 			dist:
 				src: [
 					'src/v3.js'
+					'src/es/es.js'
+					'src/es/component.js'
+					'src/es/gameObject.js'
 					'src/es/systems/*.js'
 					'src/es/components/*.js'
-					'src/es/es.js'
-					'src/gameObject.js'
-					'src/actor.js'
+					'src/actors/*.js',
 					'src/pawn.js'
 					'src/spawner.js'
-					'src/cubePawn.js'
 					'src/meshes/static/*.js'
 					'src/gameMode.js'
 					'src/stateMachine.js'
