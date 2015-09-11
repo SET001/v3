@@ -7,17 +7,21 @@ V3.CollisionSystem = class extends V3.System{
 		this.componentTypes = [];
 
 	}
+
 	init(){
 		document.addEventListener("component_new", this.onNewComponent.bind(this));
 	}
+
 	onNewComponent(component){
 		if (component.type in this.componentTypes){
 			this.components.push(component);
 		}
 	}
+
 	controller(){
 
 	}
+
 	requestTranslation(object, translation){
 		var tryObject = object.clone();
 		translation(tryObject);

@@ -4,20 +4,13 @@ class FPSCharacter extends V3.PlayerCharacter{
   setUpRenderComponent(component){
     var material = new THREE.MeshLambertMaterial({color: 0x00ff00});
 
-    var bodyG = new THREE.BoxGeometry(1, 4, 1);
-    var headG = new THREE.BoxGeometry(2, 2, 2);
+    var bodyG = new THREE.BoxGeometry(5, 20, 5);
 
     bodyG.center();
     bodyG.applyMatrix(new THREE.Matrix4().makeTranslation(0, -bodyG.boundingBox.min.y, 0));
-    var head = new THREE.Mesh(headG, material);
-    head.name = "FPSCharacter.head";
-    head.position.set(0, 5, 0);
-
     this.mesh = new THREE.Mesh(bodyG, material);
-    // this.mesh.position.set(0, 40, 0);
     this.mesh.name = "FPSCharacter";
     // this.mesh.castShadow = true;
-    this.mesh.add(head);
 
     var light = new THREE.DirectionalLight(0xffffff, 0.4);
     // light.shadowCameraVisible = true;
@@ -44,4 +37,10 @@ class FPSCharacter extends V3.PlayerCharacter{
     component.movingSpeed = 3;
     component.controllerClass = V3.FPSPlayerController;
   }
+
+  setUpPositionComponent(component){
+    component.x = 0;
+    component.y = 300;
+    component.z = 0;
+  };
 }

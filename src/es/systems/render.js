@@ -3,6 +3,7 @@ V3.RenderSystem = class extends V3.System{
 	constructor(){
 		super();
 		this.componentTypes = ['render', 'camera'];
+		this.objects = [];
 		this.name = 'render';
 		this.camera = null;
 		this.renderer = null;
@@ -25,15 +26,39 @@ V3.RenderSystem = class extends V3.System{
 		window.addEventListener("resize", this.setSize.bind(this));
 	}
 
-	onComponentNew(component){
-		if (this.componentTypes.indexOf(component.type)>-1){
-			if (component.type === 'camera'){
-				this.camera = component.object;
-				this.setSize();
-			}else{
-				this.scene.add(component.object);
+	onObjectNew(object){
+		if (object.hasComponent('render')){
+			var mesh = object.renderComponent.object;
+			if (object.hasComponent('position')){
+				mesh.position.x = object.positionComponent.x;
+				mesh.position.y = object.positionComponent.y;
+				mesh.position.z = object.positionComponent.z;
 			}
+			// object.renderComponent.object.position.set(object.positionComponent);
+			this.scene.add(mesh);
+			this.objects.push(object);
 		}
+		if (object.hasComponent('camera')){
+			this.camera = object.cameraComponent.object;
+			this.setSize();
+		};
+	}
+	onComponentNew(component){
+		// if (this.componentTypes.indexOf(component.type)>-1){
+		// if (component.type === 'camera'){
+		// 	this.camera = component.object;
+		// 	this.setSize();
+		// }
+		// 	}else{
+		// 		this.scene.add(component.object);
+
+		// 		var position = component.entity.positionComponent;
+		// 		if (position){
+		// 			component.object.position.x = position.x;
+		// 			component.object.position.z = position.z;
+		// 		}
+		// 	}
+		// }
 	}
 
 	onComponentRemove(component){}
@@ -55,13 +80,11 @@ V3.RenderSystem = class extends V3.System{
 	update(entity){
 		var obj = null;
 		for (var i in this.scene.children){
-			if(this.scene.children[i].uid === entity.id){
+			if(this.scene.children[i].id === entity.renderComponent.object.id){
 				obj = this.scene.children[i];
+				this.scene.children[i].position.set(entity.positionComponent.x, entity.positionComponent.y, entity.positionComponent.z);
 				break;
 			}
-		}
-		if (obj){
-			obj.position.set(entity.components.position.x, entity.components.position.y, entity.components.position.z);
 		}
 	}
 };

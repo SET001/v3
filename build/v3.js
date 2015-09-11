@@ -69,6 +69,12 @@ V3.System = class{
 		document.addEventListener("component_remove", function(e){
 			self.onComponentRemove.call(self, e.detail);
 		});
+		document.addEventListener("object_new", function(e){
+			self.onObjectNew.call(self, e.detail);
+		});
+	}
+	onObjectNew(){
+
 	}
 	onComponentNew(component){
 		if (this.componentTypes.indexOf(component.type)>-1){
@@ -84,8 +90,13 @@ V3.System = class{
 
 V3.ESManager = {
 	systems: {},
+	objects: {},
 	getSystem: function(sytemName){
 		return this.systems[sytemName];
+	},
+	addObject: function(object){
+		this.objects.push(object);
+		V3.trigger('component_new', component);
 	},
 	addSystem: function(systemClass, params){
 		var system = new systemClass();
@@ -131,9 +142,13 @@ V3.GameObject = class{
 	constructor(componentClasses){
 		this.id = V3._entityIndex++;
 		var self = this;
+		if (this.init){
+			this.init();
+		}
 		if (componentClasses && componentClasses.length){
 			componentClasses.map(this.addComponent, this);
 		}
+		V3.trigger('object_new', this);
 	}
 
 	addComponent(componentClass){
@@ -156,6 +171,10 @@ V3.GameObject = class{
 		V3.trigger('component_remove', this[`${type}Component`]);
 		delete this[`${type}Component`];
 	}
+
+	hasComponent(componentName){
+		return !(typeof this[`${componentName}Component`] === 'undefined')
+	}
 };
 
 // Source: src/es/systems/collision.js
@@ -167,17 +186,21 @@ V3.CollisionSystem = class extends V3.System{
 		this.componentTypes = [];
 
 	}
+
 	init(){
 		document.addEventListener("component_new", this.onNewComponent.bind(this));
 	}
+
 	onNewComponent(component){
 		if (component.type in this.componentTypes){
 			this.components.push(component);
 		}
 	}
+
 	controller(){
 
 	}
+
 	requestTranslation(object, translation){
 		var tryObject = object.clone();
 		translation(tryObject);
@@ -309,11 +332,39 @@ V3.InputSystem = class extends V3.System{
 	}
 };
 
+// Source: src/es/systems/physic.js
+V3.PhysicSystem = class extends V3.System{
+	constructor(){
+		super();
+		this.name = 'physic';
+		this.components = [];
+		this.componentTypes = ['physic'];
+		this.i = 0;
+	}
+
+	// onNewComponent(component){
+	// 	if (component.type in this.componentTypes){
+	// 		this.components.push(component);
+	// 	}
+	// }
+
+	controller(){
+		var self = this;
+		this.components.map(function(component){
+			var foo = component.entity.positionComponent.clone();
+			component.entity.positionComponent.add(component.forces[0]);
+			V3.ESManager.getSystem('render').update(component.entity);
+		});
+		// console.log(this.components.length);
+	}
+};
+
 // Source: src/es/systems/render.js
 V3.RenderSystem = class extends V3.System{
 	constructor(){
 		super();
 		this.componentTypes = ['render', 'camera'];
+		this.objects = [];
 		this.name = 'render';
 		this.camera = null;
 		this.renderer = null;
@@ -336,15 +387,39 @@ V3.RenderSystem = class extends V3.System{
 		window.addEventListener("resize", this.setSize.bind(this));
 	}
 
-	onComponentNew(component){
-		if (this.componentTypes.indexOf(component.type)>-1){
-			if (component.type === 'camera'){
-				this.camera = component.object;
-				this.setSize();
-			}else{
-				this.scene.add(component.object);
+	onObjectNew(object){
+		if (object.hasComponent('render')){
+			var mesh = object.renderComponent.object;
+			if (object.hasComponent('position')){
+				mesh.position.x = object.positionComponent.x;
+				mesh.position.y = object.positionComponent.y;
+				mesh.position.z = object.positionComponent.z;
 			}
+			// object.renderComponent.object.position.set(object.positionComponent);
+			this.scene.add(mesh);
+			this.objects.push(object);
 		}
+		if (object.hasComponent('camera')){
+			this.camera = object.cameraComponent.object;
+			this.setSize();
+		};
+	}
+	onComponentNew(component){
+		// if (this.componentTypes.indexOf(component.type)>-1){
+		// if (component.type === 'camera'){
+		// 	this.camera = component.object;
+		// 	this.setSize();
+		// }
+		// 	}else{
+		// 		this.scene.add(component.object);
+
+		// 		var position = component.entity.positionComponent;
+		// 		if (position){
+		// 			component.object.position.x = position.x;
+		// 			component.object.position.z = position.z;
+		// 		}
+		// 	}
+		// }
 	}
 
 	onComponentRemove(component){}
@@ -366,13 +441,11 @@ V3.RenderSystem = class extends V3.System{
 	update(entity){
 		var obj = null;
 		for (var i in this.scene.children){
-			if(this.scene.children[i].uid === entity.id){
+			if(this.scene.children[i].id === entity.renderComponent.object.id){
 				obj = this.scene.children[i];
+				this.scene.children[i].position.set(entity.positionComponent.x, entity.positionComponent.y, entity.positionComponent.z);
 				break;
 			}
-		}
-		if (obj){
-			obj.position.set(entity.components.position.x, entity.components.position.y, entity.components.position.z);
 		}
 	}
 };
@@ -452,11 +525,24 @@ V3.InputComponent = class extends V3.Component{
 	}
 };
 
+// Source: src/es/components/physic.js
+V3.PhysicComponent = class extends V3.Component{
+	constructor(){
+		var g = 0.05;
+		super();
+		this.type = 'physic';
+		this.forces = [
+			new THREE.Vector3(0, -g, 0),
+		];
+	}
+}
+
 // Source: src/es/components/possition.js
 V3.PositionComponent = class extends THREE.Vector3{
 	constructor(){
 		super();
-		this.system = 'position';
+		this.type = 'position';
+		this.id = V3._componentIndex++;
 	}
 }
 
@@ -477,40 +563,27 @@ V3.TickComponent = class{
 	}
 }
 
+// Source: src/actors/pawn.js
+V3.Pawn = class extends V3.GameObject{
+	constructor(){
+		super([V3.PositionComponent, V3.RenderComponent, V3.CollisionComponent]);
+	}
+};
+
+
 // Source: src/actors/playerCharacter.js
 V3.PlayerCharacter = class extends V3.GameObject{
 	constructor(){
 		super([
 
-			// V3.PositionComponent,
+
+
+			V3.PositionComponent,
 			V3.RenderComponent,
 			V3.CollisionComponent,
 			V3.InputComponent,
+			V3.PhysicComponent,
 			V3.CameraComponent]);
-	}
-};
-
-
-// Source: src/pawn.js
-V3.Pawn = class extends V3.GameObject{
-	constructor(){
-		super();
-		var self = this;
-		this.mesh = null;
-		this.canTick = false;
-		this.components = [V3.PositionComponent, V3.RenderableComponent, V3.CollidableComponent];
-	}
-
-	beginPlay(){
-
-	}
-	tick(deltaSeconds){
-		if(deltaSeconds){}
-	}
-	init(){}
-
-	onClick(){
-
 	}
 };
 
@@ -529,24 +602,10 @@ V3.Spawner = class{
 		var self = this;
 		for (var i=0; i<count; i++){
 			var object = new this.spawnClass();
-			// object.setUpRenderComponent = function(){
-			// 	this.mesh.scale.y = Math.ceil(Math.random()*10);
-			// };
-			for (var systemName in this.compSettings){
-				var _sysName = systemName.charAt(0).toUpperCase() + systemName.slice(1);
-				var setUpFunction = `setUp${_sysName}Component`;
-				object[setUpFunction] = this.compSettings[systemName];
-			};
-			object.setUpPositionComponent = function(){
-				var x = self.randomInRange(endPoint.x, startPoint.x);
-
-				var y = self.randomInRange(endPoint.y, startPoint.y);
-				var z = self.randomInRange(endPoint.z, startPoint.z);
-				return new THREE.Vector3(x, y, z);
-			}
-			var entity = object.register();
-			// console.log(object);
-			// console.log(entity.components.render);
+			object.positionComponent.x = self.randomInRange(endPoint.x, startPoint.x);
+			object.positionComponent.y = self.randomInRange(endPoint.y, startPoint.y);
+			object.positionComponent.z = self.randomInRange(endPoint.z, startPoint.z);
+			V3.ESManager.getSystem('render').update(object);
 			this.objects.push(object);
 		};
 		return this.objects;
@@ -599,7 +658,7 @@ V3.StaticMesh = class extends V3.GameObject{
 V3.GameMode = class{
 	constructor(){
 		this.state = new V3.StateMachine();
-		this.systems = [V3.RenderSystem, V3.CollisionSystem, V3.InputSystem];
+		this.systems = [V3.RenderSystem, V3.CollisionSystem, V3.InputSystem, V3.PhysicSystem];
 		// this.mainPawn.beginPlay();	// this should be triggered somewhere else, not in constructor
 		// only one controls class may be in use at any given time
 		// this.controls = new V3.Controls();

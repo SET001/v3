@@ -6,9 +6,13 @@ V3.GameObject = class{
 	constructor(componentClasses){
 		this.id = V3._entityIndex++;
 		var self = this;
+		if (this.init){
+			this.init();
+		}
 		if (componentClasses && componentClasses.length){
 			componentClasses.map(this.addComponent, this);
 		}
+		V3.trigger('object_new', this);
 	}
 
 	addComponent(componentClass){
@@ -30,5 +34,9 @@ V3.GameObject = class{
 	removeComponent(type){
 		V3.trigger('component_remove', this[`${type}Component`]);
 		delete this[`${type}Component`];
+	}
+
+	hasComponent(componentName){
+		return !(typeof this[`${componentName}Component`] === 'undefined')
 	}
 };

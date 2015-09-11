@@ -2,7 +2,7 @@
 V3.GameMode = class{
 	constructor(){
 		this.state = new V3.StateMachine();
-		this.systems = [V3.RenderSystem, V3.CollisionSystem, V3.InputSystem];
+		this.systems = [V3.RenderSystem, V3.CollisionSystem, V3.InputSystem, V3.PhysicSystem];
 		// this.mainPawn.beginPlay();	// this should be triggered somewhere else, not in constructor
 		// only one controls class may be in use at any given time
 		// this.controls = new V3.Controls();

@@ -17,6 +17,7 @@
     "threejs": "*"
   },
   "dependencies": {
-    "bootstrap": "~3.3.5"
+    "bootstrap": "~3.3.5",
+    "es6-shim": "~0.33.3"
   }
 }
