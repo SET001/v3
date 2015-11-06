@@ -400,6 +400,7 @@ V3.RenderSystem = class extends V3.System{
 		// if (V3.config.showAxis){
 		// 	this.scene.add(new THREE.AxisHelper(V3.config.axisLength));
 		// }
+		window.addEventListener("resize", () => this.setSize());
 	}
 
 	addScene(scene){
