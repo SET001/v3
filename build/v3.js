@@ -699,7 +699,6 @@ V3.ApplicationMode = class{
 		for (let i in this.systems){
 			var systemClass = this.systems[i];
 			var system = V3.ESManager.addSystem(systemClass);
-			console.log(system);
 			var systemName = system.name.charAt(0).toUpperCase() + system.name.slice(1) + 'System';
 
 			var setUpFunction = `setUp${systemName}`;
