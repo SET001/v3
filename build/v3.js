@@ -4,8 +4,8 @@ var V3 = {
 	_componentIndex: 0,
 	_systemIndex: 0,
 	_entityIndex: 0,
-	container: null,
 	config: {
+		container: document.body,
 		path: "",
 		renderer: {
 			antialias: true,
@@ -14,11 +14,12 @@ var V3 = {
 			shadowMapHeight: 2024,
 			shadowMapWidth: 2024
 		},
-		showAxis: false,
+		showAxis: true,
 		axisLength: 1000
 	},
-	init: function(){
-		this.container = document.body;
+	storage: null,
+	init: function(config){
+		_.assign(this.config, config);
 	},
 	runProject: function(id){
 		var project = new V3.Project();
@@ -72,6 +73,7 @@ V3.System = class{
 		document.addEventListener("object_new", function(e){
 			self.onObjectNew.call(self, e.detail);
 		});
+
 	}
 	onObjectNew(){
 
@@ -89,8 +91,10 @@ V3.System = class{
 };
 
 V3.ESManager = {
-	systems: {},
-	objects: {},
+	init: function(){
+		this.systems = {};
+		this.objects = {};
+	},
 	getSystem: function(sytemName){
 		return this.systems[sytemName];
 	},
@@ -113,11 +117,17 @@ V3.ESManager = {
 			throw `System ${system.name} alriedy exist!`;
 
 		this.systems[system.name] = system;
+		if (system.init){
+			system.init();
+		}
 		return system;
 	},
 	removeSystem: function(){},
 	run: function(delta){
 		var self = this;
+		if (typeof uniforms !== 'undefined'){
+			uniforms.time.value += 0.05;
+		}
 		for (let systemName in this.systems){
 			var system = this.systems[systemName];
 			if (system.controller)
@@ -220,6 +230,7 @@ V3.CollisionSystem = class extends V3.System{
 V3.InputSystem = class extends V3.System{
 	constructor(){
 		super();
+		console.log("initializing input system...");
 		this.name =  'input';
 		this.components = [];
 		this.controllers = [];
@@ -236,13 +247,13 @@ V3.InputSystem = class extends V3.System{
 		var mouse = new THREE.Vector2();
 		this.pointerLockEnabled = false;
 
-    var element = V3.container;
+    var element = V3.config.container;
 
     var havePointerLock = 'pointerLockElement' in document;
     var mouseCallback = self.mouseMove.bind(self);
     // mouse
     if (havePointerLock){
-    	document.onclick = function(){
+    	element.onclick = function(){
     		if (!this.pointerLockEnabled){
 					element.requestPointerLock();
     		}else{
@@ -312,6 +323,7 @@ V3.InputSystem = class extends V3.System{
 
 	mouseMove(e){
 		this.controllers.map(function(controller){
+			console.log(e.movementX, e.movementY);
 			if (Math.abs(e.movementX)<100 && Math.abs(e.movementY) < 100){
 				if (e.movementX>0)
 			 		controller.mouseRight(e.movementX);
@@ -368,23 +380,35 @@ V3.RenderSystem = class extends V3.System{
 		this.name = 'render';
 		this.camera = null;
 		this.renderer = null;
-		this.scene = null;
-
-		this.scene = new THREE.Scene();
-		this.container = V3.config.container ? V3.config.container : document.body;
-
+		this.scenes = [];
+		this.container = V3.config.container;
 		this.renderer = new THREE.WebGLRenderer({antialias: V3.config.renderer.antialias});
 		this.renderer.autoClear = false;
-		this.renderer.shadowMapEnabled = V3.config.renderer.shadowMapEnabled;
-		this.renderer.shadowMapType = V3.config.renderer.shadowMapType;
-		this.renderer.shadowMapHeight = V3.config.renderer.shadowMapHeight;
-		this.renderer.shadowMapWidth = V3.config.renderer.shadowMapWidth;
+		// this.renderer.shadowMap.enabled = true;
+		// this.renderer.shadowMap.needsUpdate = true;
+		// this.renderer.shadowMap.soft = false;
+		// this.renderer.shadowMap.type = THREE.BasicShadowMap;
+		// THREE.BasicShadowMap | THREE.PCFShadowMap | THREE.PCFSoftShadowMap
+		// _.assign(this.renderer.shadowMap, V3.config.renderer.shadowMap);
+		// this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+		// this.render = _.assign(_.clone(this.renderer), V3.config.renderer);
+
 		this.container.appendChild(this.renderer.domElement);
-		if (V3.config.showAxis){
-			this.scene.add(new THREE.AxisHelper(V3.config.axisLength));
-		}
-		// should maybe add listener to container - not to whole window?
-		window.addEventListener("resize", this.setSize.bind(this));
+		// if (V3.config.showAxis){
+		// 	this.scene.add(new THREE.AxisHelper(V3.config.axisLength));
+		// }
+	}
+
+	addScene(scene){
+		this.scenes.push(scene);
+	}
+
+	removeScene(scene){
+
+	}
+
+	resetScenes(){
+		this.scenes = [];
 	}
 
 	onObjectNew(object){
@@ -396,7 +420,7 @@ V3.RenderSystem = class extends V3.System{
 				mesh.position.z = object.positionComponent.z;
 			}
 			// object.renderComponent.object.position.set(object.positionComponent);
-			this.scene.add(mesh);
+			this.scenes[0].add(mesh);
 			this.objects.push(object);
 		}
 		if (object.hasComponent('camera')){
@@ -425,9 +449,10 @@ V3.RenderSystem = class extends V3.System{
 	onComponentRemove(component){}
 
 	controller(entities){
-		if (this.camera){
-			this.renderer.render(this.scene, this.camera);
-		}
+		if (this.camera && this.scenes.length)
+			for (let i in this.scenes){
+				this.renderer.render(this.scenes[i], this.camera);
+			}
 	}
 
 	setSize(){
@@ -654,11 +679,11 @@ V3.StaticMesh = class extends V3.GameObject{
   }
 };
 
-// Source: src/gameMode.js
-V3.GameMode = class{
+// Source: src/applicationMode.js
+V3.ApplicationMode = class{
 	constructor(){
 		this.state = new V3.StateMachine();
-		this.systems = [V3.RenderSystem, V3.CollisionSystem, V3.InputSystem, V3.PhysicSystem];
+		this.systems = [];
 		// this.mainPawn.beginPlay();	// this should be triggered somewhere else, not in constructor
 		// only one controls class may be in use at any given time
 		// this.controls = new V3.Controls();
@@ -669,9 +694,15 @@ V3.GameMode = class{
 	//
 
 	init(){
-		var self = this;
-		this.systems.map(function(system){
-			V3.ESManager.addSystem(system);
+		this.systems.map( (systemClass) => {
+			var system = V3.ESManager.addSystem(systemClass);
+			console.log(system);
+			var systemName = system.name.charAt(0).toUpperCase() + system.name.slice(1) + 'System';
+
+			var setUpFunction = `setUp${systemName}`;
+			if (this[setUpFunction]){
+				this[setUpFunction](system);
+			}
 		});
 		if (this.defaultPawn){
 			var pawn = new this.defaultPawn();
@@ -679,6 +710,14 @@ V3.GameMode = class{
 	}
 	startPlay(){
 		V3.ESManager.run();
+	}
+};
+
+// Source: src/defaultApplicationMode.js
+V3.DefaultApplicationMode = class extends V3.ApplicationMode{
+	constructor(){
+		super();
+		this.systems = [V3.RenderSystem];
 	}
 };
 
@@ -832,18 +871,75 @@ V3.StrategyPlayerController = class extends V3.BasicPlayerController{
 
 };
 
-// Source: src/game.js
-V3.Game = class{
-	constructor(){
-		this.mode = new V3.GameMode();
+// Source: src/application.js
+V3.Application = class{
+
+	constructor(settings){
+		this.defaultMode = 'DefaultApplicationMode';
+		this.defaultScene = 'scene1';
+		this.scenes = {};
+		this.scenes[this.defaultScene] = {};
+		this.modes = []
+		_.assign(this, settings);
+
+		this.initialized = false;
 	}
-	run(){
-		// if defined project url then load map
+
+	init(){
+		this.mode = new window[this.defaultMode]();
+		// this.scene = this.scenes[this.defaultScene];
+
+		V3.ESManager.init();
 		this.mode.init();
+
+
+		this.initialized = true;
+		return this;
+	}
+
+	run(){
+		if (!this.initialized) this.init();
+		// if defined project url then load map
 		this.mode.startPlay();
 		// load default scene
 		// run default scene
 	}
 	//	find where to place
+
 	loadMap(){}
 };
+
+// Source: src/storages/fileSystem.js
+V3.FileSystemStorage = {
+	init: function(){
+		window.requestFileSystem = window.requestFileSystem || window.webkitRequestFileSystem;
+		requestFileSystem(window.PERSISTENT, size, successCallback, opt_errorCallback)
+	},
+	getApplicationsList: function(){
+		console.log("asdasd");
+	},
+	getSettings: function(){
+
+	}
+}
+
+// Source: src/storages/local.js
+V3.LocalStorage = {
+	key: 'V3',
+	defaults: {
+		settings: {},
+		projects: []
+	},
+	init: function(){
+		if (typeof localStorage[this.key] === undefined){
+			localStorage[this.key] = this.defaults;
+		}
+		return this;
+	},
+	getApplicationsList: function(){
+		console.log("asdasdasd");
+	},
+	getSettings: function(){
+
+	}
+}

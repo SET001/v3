@@ -3,7 +3,8 @@ function update () {
   stats.begin();
   stats.end();
   requestAnimationFrame( update );
-};
+}
+
 function addStats(){
 	stats = new Stats();
   stats.domElement.style.position = 'absolute';
@@ -11,8 +12,8 @@ function addStats(){
   stats.domElement.style.top = '0px';
   document.body.appendChild( stats.domElement );
 	update();
-
 }
+
 window.onload = function() {
 	addStats();
 
@@ -25,7 +26,7 @@ window.onload = function() {
   });
   // V3.config.showAxis = true;
   // var stats = new Stats();
-  var game = new V3.Game();
-  game.mode = new RPGGameMode();
-	game.run();
+  var app = new V3.Application();
+  app.mode = new RPGGameMode();
+	app.run();
 };

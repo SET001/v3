@@ -2,6 +2,7 @@
 V3.InputSystem = class extends V3.System{
 	constructor(){
 		super();
+		console.log("initializing input system...");
 		this.name =  'input';
 		this.components = [];
 		this.controllers = [];
@@ -18,13 +19,13 @@ V3.InputSystem = class extends V3.System{
 		var mouse = new THREE.Vector2();
 		this.pointerLockEnabled = false;
 
-    var element = V3.container;
+    var element = V3.config.container;
 
     var havePointerLock = 'pointerLockElement' in document;
     var mouseCallback = self.mouseMove.bind(self);
     // mouse
     if (havePointerLock){
-    	document.onclick = function(){
+    	element.onclick = function(){
     		if (!this.pointerLockEnabled){
 					element.requestPointerLock();
     		}else{
@@ -94,6 +95,7 @@ V3.InputSystem = class extends V3.System{
 
 	mouseMove(e){
 		this.controllers.map(function(controller){
+			console.log(e.movementX, e.movementY);
 			if (Math.abs(e.movementX)<100 && Math.abs(e.movementY) < 100){
 				if (e.movementX>0)
 			 		controller.mouseRight(e.movementX);

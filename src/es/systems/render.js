@@ -7,23 +7,35 @@ V3.RenderSystem = class extends V3.System{
 		this.name = 'render';
 		this.camera = null;
 		this.renderer = null;
-		this.scene = null;
-
-		this.scene = new THREE.Scene();
-		this.container = V3.config.container ? V3.config.container : document.body;
-
+		this.scenes = [];
+		this.container = V3.config.container;
 		this.renderer = new THREE.WebGLRenderer({antialias: V3.config.renderer.antialias});
 		this.renderer.autoClear = false;
-		this.renderer.shadowMapEnabled = V3.config.renderer.shadowMapEnabled;
-		this.renderer.shadowMapType = V3.config.renderer.shadowMapType;
-		this.renderer.shadowMapHeight = V3.config.renderer.shadowMapHeight;
-		this.renderer.shadowMapWidth = V3.config.renderer.shadowMapWidth;
+		// this.renderer.shadowMap.enabled = true;
+		// this.renderer.shadowMap.needsUpdate = true;
+		// this.renderer.shadowMap.soft = false;
+		// this.renderer.shadowMap.type = THREE.BasicShadowMap;
+		// THREE.BasicShadowMap | THREE.PCFShadowMap | THREE.PCFSoftShadowMap
+		// _.assign(this.renderer.shadowMap, V3.config.renderer.shadowMap);
+		// this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+		// this.render = _.assign(_.clone(this.renderer), V3.config.renderer);
+
 		this.container.appendChild(this.renderer.domElement);
-		if (V3.config.showAxis){
-			this.scene.add(new THREE.AxisHelper(V3.config.axisLength));
-		}
-		// should maybe add listener to container - not to whole window?
-		window.addEventListener("resize", this.setSize.bind(this));
+		// if (V3.config.showAxis){
+		// 	this.scene.add(new THREE.AxisHelper(V3.config.axisLength));
+		// }
+	}
+
+	addScene(scene){
+		this.scenes.push(scene);
+	}
+
+	removeScene(scene){
+
+	}
+
+	resetScenes(){
+		this.scenes = [];
 	}
 
 	onObjectNew(object){
@@ -35,7 +47,7 @@ V3.RenderSystem = class extends V3.System{
 				mesh.position.z = object.positionComponent.z;
 			}
 			// object.renderComponent.object.position.set(object.positionComponent);
-			this.scene.add(mesh);
+			this.scenes[0].add(mesh);
 			this.objects.push(object);
 		}
 		if (object.hasComponent('camera')){
@@ -64,9 +76,10 @@ V3.RenderSystem = class extends V3.System{
 	onComponentRemove(component){}
 
 	controller(entities){
-		if (this.camera){
-			this.renderer.render(this.scene, this.camera);
-		}
+		if (this.camera && this.scenes.length)
+			for (let i in this.scenes){
+				this.renderer.render(this.scenes[i], this.camera);
+			}
 	}
 
 	setSize(){
