@@ -34,6 +34,7 @@ V3.System = class{
 };
 
 V3.ESManager = {
+	initializers: [],
 	init: function(){
 		this.systems = {};
 		this.objects = {};

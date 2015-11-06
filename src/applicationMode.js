@@ -20,15 +20,15 @@ V3.ApplicationMode = class{
 
 			var setUpFunction = `setUp${systemName}`;
 			if (this[setUpFunction]){
-				this[setUpFunction](system);
+				V3.ESManager.initializers.push(this[setUpFunction](system));
 			}
 		}
-
-		setTimeout( () => {
+		Promise.all(V3.ESManager.initializers).then( () => {
+			console.log("all initializers ready");
 			if (this.defaultPawn){
 				var pawn = new this.defaultPawn();
 			}
-		}, 1000);
+		});
 	}
 	startPlay(){
 		V3.ESManager.run();
