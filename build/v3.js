@@ -219,10 +219,13 @@ V3.CollisionSystem = class extends V3.System{
 		var direction = endPoint.clone().sub(startPoint).normalize();
 		var distance = startPoint.distanceTo(endPoint);
 		var ray = new THREE.Raycaster(startPoint, direction, 0, distance+2);
-		var collisions = ray.intersectObjects(V3.ESManager.getSystem('render').scene.children, true);
-		if (!collisions.length){
-			translation(object);
-		}
+		var collisions = ray.intersectObjects(V3.ESManager.getSystem('render').scenes[0].children, true);
+		translation(object);
+		// if (!collisions.length){
+		// 	translation(object);
+		// } else {
+		// 	console.log(collisions);
+		// }
 	}
 };
 
@@ -323,7 +326,6 @@ V3.InputSystem = class extends V3.System{
 
 	mouseMove(e){
 		this.controllers.map(function(controller){
-			console.log(e.movementX, e.movementY);
 			if (Math.abs(e.movementX)<100 && Math.abs(e.movementY) < 100){
 				if (e.movementX>0)
 			 		controller.mouseRight(e.movementX);
@@ -694,7 +696,8 @@ V3.ApplicationMode = class{
 	//
 
 	init(){
-		this.systems.map( (systemClass) => {
+		for (let i in this.systems){
+			var systemClass = this.systems[i];
 			var system = V3.ESManager.addSystem(systemClass);
 			console.log(system);
 			var systemName = system.name.charAt(0).toUpperCase() + system.name.slice(1) + 'System';
@@ -703,10 +706,13 @@ V3.ApplicationMode = class{
 			if (this[setUpFunction]){
 				this[setUpFunction](system);
 			}
-		});
-		if (this.defaultPawn){
-			var pawn = new this.defaultPawn();
 		}
+
+		setTimeout( () => {
+			if (this.defaultPawn){
+				var pawn = new this.defaultPawn();
+			}
+		}, 1000);
 	}
 	startPlay(){
 		V3.ESManager.run();

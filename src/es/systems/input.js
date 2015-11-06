@@ -95,7 +95,6 @@ V3.InputSystem = class extends V3.System{
 
 	mouseMove(e){
 		this.controllers.map(function(controller){
-			console.log(e.movementX, e.movementY);
 			if (Math.abs(e.movementX)<100 && Math.abs(e.movementY) < 100){
 				if (e.movementX>0)
 			 		controller.mouseRight(e.movementX);

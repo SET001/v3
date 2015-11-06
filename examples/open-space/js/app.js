@@ -1,3 +1,10 @@
+"use strict";
+class PlayerController extends V3.FPSPlayerController{
+  mouseWheel(movement){
+    this.entity.renderComponent.object.position.y += movement>0 ? -10 : 10;
+  }
+}
+
 class Player extends V3.GameObject{
   constructor(){
     super([
@@ -21,7 +28,7 @@ class Player extends V3.GameObject{
 
   setUpInputComponent(component){
     component.movingSpeed = 3;
-    component.controllerClass = V3.FPSPlayerController;
+    component.controllerClass = PlayerController;
   }
 }
 
