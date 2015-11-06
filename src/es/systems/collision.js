@@ -30,9 +30,12 @@ V3.CollisionSystem = class extends V3.System{
 		var direction = endPoint.clone().sub(startPoint).normalize();
 		var distance = startPoint.distanceTo(endPoint);
 		var ray = new THREE.Raycaster(startPoint, direction, 0, distance+2);
-		var collisions = ray.intersectObjects(V3.ESManager.getSystem('render').scene.children, true);
-		if (!collisions.length){
-			translation(object);
-		}
+		var collisions = ray.intersectObjects(V3.ESManager.getSystem('render').scenes[0].children, true);
+		translation(object);
+		// if (!collisions.length){
+		// 	translation(object);
+		// } else {
+		// 	console.log(collisions);
+		// }
 	}
 };

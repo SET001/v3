@@ -3,8 +3,8 @@ var V3 = {
 	_componentIndex: 0,
 	_systemIndex: 0,
 	_entityIndex: 0,
-	container: null,
 	config: {
+		container: document.body,
 		path: "",
 		renderer: {
 			antialias: true,
@@ -13,11 +13,12 @@ var V3 = {
 			shadowMapHeight: 2024,
 			shadowMapWidth: 2024
 		},
-		showAxis: false,
+		showAxis: true,
 		axisLength: 1000
 	},
-	init: function(){
-		this.container = document.body;
+	storage: null,
+	init: function(config){
+		_.assign(this.config, config);
 	},
 	runProject: function(id){
 		var project = new V3.Project();

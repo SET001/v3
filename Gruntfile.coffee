@@ -23,10 +23,12 @@ module.exports = (grunt) ->
 					'src/pawn.js'
 					'src/spawner.js'
 					'src/meshes/static/*.js'
-					'src/gameMode.js'
+					'src/applicationMode.js'
+					'src/defaultApplicationMode.js'
 					'src/stateMachine.js'
 					'src/playerControllers/*.js'
-					'src/game.js'
+					'src/application.js'
+					'src/storages/*.js'
 				]
 				dest: 'build/v3.js'
 		uglify:

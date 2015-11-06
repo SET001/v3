@@ -16,6 +16,7 @@ V3.System = class{
 		document.addEventListener("object_new", function(e){
 			self.onObjectNew.call(self, e.detail);
 		});
+
 	}
 	onObjectNew(){
 
@@ -33,8 +34,10 @@ V3.System = class{
 };
 
 V3.ESManager = {
-	systems: {},
-	objects: {},
+	init: function(){
+		this.systems = {};
+		this.objects = {};
+	},
 	getSystem: function(sytemName){
 		return this.systems[sytemName];
 	},
@@ -57,11 +60,17 @@ V3.ESManager = {
 			throw `System ${system.name} alriedy exist!`;
 
 		this.systems[system.name] = system;
+		if (system.init){
+			system.init();
+		}
 		return system;
 	},
 	removeSystem: function(){},
 	run: function(delta){
 		var self = this;
+		if (typeof uniforms !== 'undefined'){
+			uniforms.time.value += 0.05;
+		}
 		for (let systemName in this.systems){
 			var system = this.systems[systemName];
 			if (system.controller)
