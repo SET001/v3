@@ -24,7 +24,6 @@ V3.ApplicationMode = class{
 			}
 		}
 		Promise.all(V3.ESManager.initializers).then( () => {
-			console.log("all initializers ready");
 			if (this.defaultPawn){
 				var pawn = new this.defaultPawn();
 			}
