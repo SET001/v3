@@ -681,51 +681,6 @@ V3.StaticMesh = class extends V3.GameObject{
   }
 };
 
-// Source: src/applicationMode.js
-V3.ApplicationMode = class{
-	constructor(){
-		this.state = new V3.StateMachine();
-		this.systems = [];
-		// this.mainPawn.beginPlay();	// this should be triggered somewhere else, not in constructor
-		// only one controls class may be in use at any given time
-		// this.controls = new V3.Controls();
-	}
-	// game pausing
-	// levels transitions
-	// actors spawning
-	//
-
-	init(){
-		for (let i in this.systems){
-			var systemClass = this.systems[i];
-			var system = V3.ESManager.addSystem(systemClass);
-			var systemName = system.name.charAt(0).toUpperCase() + system.name.slice(1) + 'System';
-
-			var setUpFunction = `setUp${systemName}`;
-			if (this[setUpFunction]){
-				this[setUpFunction](system);
-			}
-		}
-
-		setTimeout( () => {
-			if (this.defaultPawn){
-				var pawn = new this.defaultPawn();
-			}
-		}, 1000);
-	}
-	startPlay(){
-		V3.ESManager.run();
-	}
-};
-
-// Source: src/defaultApplicationMode.js
-V3.DefaultApplicationMode = class extends V3.ApplicationMode{
-	constructor(){
-		super();
-		this.systems = [V3.RenderSystem];
-	}
-};
-
 // Source: src/stateMachine.js
 {
 	let _states = ["inProgress", "enteringMap", "leavingMap", "aborted", "paused"];
@@ -874,44 +829,6 @@ V3.RPGPlayerController = class extends V3.BasicPlayerController{
 // Source: src/playerControllers/strategy.js
 V3.StrategyPlayerController = class extends V3.BasicPlayerController{
 
-};
-
-// Source: src/application.js
-V3.Application = class{
-
-	constructor(settings){
-		this.defaultMode = 'DefaultApplicationMode';
-		this.defaultScene = 'scene1';
-		this.scenes = {};
-		this.scenes[this.defaultScene] = {};
-		this.modes = []
-		_.assign(this, settings);
-
-		this.initialized = false;
-	}
-
-	init(){
-		this.mode = new window[this.defaultMode]();
-		// this.scene = this.scenes[this.defaultScene];
-
-		V3.ESManager.init();
-		this.mode.init();
-
-
-		this.initialized = true;
-		return this;
-	}
-
-	run(){
-		if (!this.initialized) this.init();
-		// if defined project url then load map
-		this.mode.startPlay();
-		// load default scene
-		// run default scene
-	}
-	//	find where to place
-
-	loadMap(){}
 };
 
 // Source: src/storages/fileSystem.js
