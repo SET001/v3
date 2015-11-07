@@ -2,7 +2,6 @@
 V3.InputSystem = class extends V3.System{
 	constructor(){
 		super();
-		console.log("initializing input system...");
 		this.name =  'input';
 		this.components = [];
 		this.controllers = [];
