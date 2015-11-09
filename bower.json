@@ -1,0 +1,23 @@
+{
+  "name": "v3",
+  "version": "0.0.0",
+  "authors": [
+    "SET <settydark@gmail.com>"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "devDependencies": {
+    "lodash": "~3.10.0",
+    "threejs": "*"
+  },
+  "dependencies": {
+    "bootstrap": "~3.3.5",
+    "es6-shim": "~0.33.3"
+  }
+}
